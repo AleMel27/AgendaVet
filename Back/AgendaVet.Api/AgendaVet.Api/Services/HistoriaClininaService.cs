@@ -17,15 +17,21 @@ namespace AgendaVet.Api.Services
 
         public async Task<IEnumerable<HistoriaClinicaRespDto>> ObtenerPorPacienteAsync(int idPaciente)
         {
-            var query = from h in _context.HistoriasClinicas
-                        where h.IdPaciente == idPaciente
-                        join pac in _context.Pacientes on h.IdPaciente equals pac.IdPaciente into pacGroup
-                        from pac in pacGroup.DefaultIfEmpty()
-                        join usu in _context.Usuarios on h.IdVeterinario equals usu.IdUsuario into usuGroup
-                        from usu in usuGroup.DefaultIfEmpty()
-                        select MapearARespDto(h, pac, usu);
+            // 1. Ejecutamos la consulta trayendo los datos necesarios de la base de datos
+            var query = await (from h in _context.HistoriasClinicas
+                               join p in _context.Pacientes on h.IdPaciente equals p.IdPaciente
+                               join u in _context.Usuarios on h.IdVeterinario equals u.IdUsuario
+                               where h.IdPaciente == idPaciente
+                               select new { Historia = h, Paciente = p, Veterinario = u })
+                                .ToListAsync();
 
-            return await query.OrderByDescending(h => h.FechaAtencion).ToListAsync();
+            // 2. Aplicamos el ordenamiento y el mapeo, retornando como IEnumerable
+            var resultado = query
+                .OrderByDescending(x => x.Historia.FechaAtencion)
+                .Select(x => MapearARespDto(x.Historia, x.Paciente, x.Veterinario))
+                .ToList();
+
+            return resultado;
         }
 
         public async Task<PaginatedRespDto> ObtenerPaginadoPorPacienteAsync(int idPaciente, int pageNumber, int pageSize)
