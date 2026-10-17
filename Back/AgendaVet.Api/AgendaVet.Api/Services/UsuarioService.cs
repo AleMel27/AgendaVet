@@ -1,4 +1,4 @@
-﻿using AgendaVet.Api.DTOs.Request;
+using AgendaVet.Api.DTOs.Request;
 using AgendaVet.Api.DTOs.Response;
 using AgendaVet.Api.Interfaces;
 using AgendaVet.Api.Models;
@@ -18,32 +18,57 @@ namespace AgendaVet.Api.Services
 
         public async Task<IEnumerable<UsuarioRespDto>> ObtenerTodosAsync()
         {
-            return await _context.Usuarios
-                .Include(u => u.IdRol)
-                .Select(u => MapearARespDto(u))
-                .ToListAsync();
+            var query = from u in _context.Usuarios
+                        join r in _context.Roles on u.IdRol equals r.IdRol into rolGroup
+                        from r in rolGroup.DefaultIfEmpty()
+                        select new UsuarioRespDto
+                        {
+                            IdUsuario = u.IdUsuario,
+                            IdRol = u.IdRol,
+                            RolNombre = r != null ? r.Nombre : string.Empty,
+                            Nombre = u.Nombre,
+                            Apellido = u.Apellido,
+                            Email = u.Email,
+                            Telefono = u.Telefono,
+                            Activo = u.Activo,
+                            FechaRegistro = u.FechaRegistro
+                        };
+            return await query.ToListAsync();
         }
 
         public async Task<PaginatedRespDto> ObtenerPaginadoAsync(int pageNumber, int pageSize, string? buscar = null)
         {
-            var query = _context.Usuarios
-                .Include(u => u.IdRol)
-                .AsQueryable();
+            var baseQuery = from u in _context.Usuarios
+                            join r in _context.Roles on u.IdRol equals r.IdRol into rolGroup
+                            from r in rolGroup.DefaultIfEmpty()
+                            select new { Usuario = u, Rol = r };
 
             if (!string.IsNullOrWhiteSpace(buscar))
             {
-                query = query.Where(u => u.Nombre.Contains(buscar) ||
-                                         u.Apellido.Contains(buscar) ||
-                                         u.Email.Contains(buscar));
+                baseQuery = baseQuery.Where(x => x.Usuario.Nombre.Contains(buscar) ||
+                                                 x.Usuario.Apellido.Contains(buscar) ||
+                                                 x.Usuario.Email.Contains(buscar));
             }
 
-            int totalRecords = await query.CountAsync();
-            var items = await query
-                .OrderByDescending(u => u.IdUsuario)
+            int totalRecords = await baseQuery.CountAsync();
+            var itemsRaw = await baseQuery
+                .OrderByDescending(x => x.Usuario.IdUsuario)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .Select(u => MapearARespDto(u))
                 .ToListAsync();
+
+            var items = itemsRaw.Select(x => new UsuarioRespDto
+            {
+                IdUsuario = x.Usuario.IdUsuario,
+                IdRol = x.Usuario.IdRol,
+                RolNombre = x.Rol != null ? x.Rol.Nombre : string.Empty,
+                Nombre = x.Usuario.Nombre,
+                Apellido = x.Usuario.Apellido,
+                Email = x.Usuario.Email,
+                Telefono = x.Usuario.Telefono,
+                Activo = x.Usuario.Activo,
+                FechaRegistro = x.Usuario.FechaRegistro
+            }).ToList();
 
             return new PaginatedRespDto
             {
@@ -56,11 +81,27 @@ namespace AgendaVet.Api.Services
 
         public async Task<UsuarioRespDto?> ObtenerPorIdAsync(int id)
         {
-            var u = await _context.Usuarios
-                .Include(u => u.IdRol)
-                .FirstOrDefaultAsync(u => u.IdUsuario == id);
+            var item = await (from u in _context.Usuarios
+                              where u.IdUsuario == id
+                              join r in _context.Roles on u.IdRol equals r.IdRol into rolGroup
+                              from r in rolGroup.DefaultIfEmpty()
+                              select new { Usuario = u, Rol = r })
+                             .FirstOrDefaultAsync();
 
-            return u == null ? null : MapearARespDto(u);
+            if (item == null) return null;
+
+            return new UsuarioRespDto
+            {
+                IdUsuario = item.Usuario.IdUsuario,
+                IdRol = item.Usuario.IdRol,
+                RolNombre = item.Rol != null ? item.Rol.Nombre : string.Empty,
+                Nombre = item.Usuario.Nombre,
+                Apellido = item.Usuario.Apellido,
+                Email = item.Usuario.Email,
+                Telefono = item.Usuario.Telefono,
+                Activo = item.Usuario.Activo,
+                FechaRegistro = item.Usuario.FechaRegistro
+            };
         }
 
         public async Task<UsuarioRespDto> CrearAsync(UsuarioReqDto dto)
@@ -109,17 +150,5 @@ namespace AgendaVet.Api.Services
             return true;
         }
 
-        private static UsuarioRespDto MapearARespDto(Usuario u) => new()
-        {
-            IdUsuario = u.IdUsuario,
-            IdRol = u.IdRol,
-            RolNombre = string.Empty,
-            Nombre = u.Nombre,
-            Apellido = u.Apellido,
-            Email = u.Email,
-            Telefono = u.Telefono,
-            Activo = u.Activo,
-            FechaRegistro = u.FechaRegistro
-        };
     }
 }

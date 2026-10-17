@@ -1,4 +1,4 @@
-﻿using AgendaVet.Api.DTOs.Request;
+using AgendaVet.Api.DTOs.Request;
 using AgendaVet.Api.DTOs.Response;
 using AgendaVet.Api.Interfaces;
 using AgendaVet.Api.Models;
@@ -26,8 +26,7 @@ namespace AgendaVet.Api.Services
             if (usuario == null || !usuario.Activo)
                 return null;
 
-            // Validación directa para evitar conflictos de hashes con BCrypt en desarrollo
-            bool esPasswordValido = (dto.Password == "123456" || BCrypt.Net.BCrypt.Verify(dto.Password, usuario.Password));
+            bool esPasswordValido = BCrypt.Net.BCrypt.Verify(dto.Password, usuario.Password);
 
             if (!esPasswordValido)
                 return null;

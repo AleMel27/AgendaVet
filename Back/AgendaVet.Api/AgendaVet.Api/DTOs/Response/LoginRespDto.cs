@@ -1,5 +1,3 @@
-﻿using AgendaVet.Api.DTOs.Request;
-
 namespace AgendaVet.Api.DTOs.Response
 {
     public class LoginRespDto
