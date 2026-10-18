@@ -544,3 +544,167 @@
     font-size: 24px;
   }
 }
+
+.appointments-card {
+  min-height: 100%;
+}
+
+.view-all {
+  color: #3478c5;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.view-all:hover {
+  text-decoration: underline;
+}
+
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+}
+
+.appointment-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid #edf1f6;
+}
+
+.appointment-item:last-child {
+  border-bottom: none;
+}
+
+.appointment-time {
+  min-width: 52px;
+  color: #3478c5;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.appointment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.appointment-info strong {
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.appointment-info span {
+  color: #7b8794;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appointment-status {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-pendiente {
+  background: #fff7e6;
+  color: #b7791f;
+}
+
+.status-confirmada {
+  background: #eaf4ff;
+  color: #3478c5;
+}
+
+.status-atencion {
+  background: #eef2ff;
+  color: #5b5fc7;
+}
+
+.status-completada {
+  background: #eaf8f0;
+  color: #25855a;
+}
+
+.status-cancelada {
+  background: #fff0f0;
+  color: #c53030;
+}
+
+.appointments-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 230px;
+  text-align: center;
+  padding: 20px;
+}
+
+.empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  background: #eaf4ff;
+  color: #3478c5;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.appointments-empty h3 {
+  margin: 0 0 6px;
+  color: #1e293b;
+  font-size: 15px;
+}
+
+.appointments-empty p {
+  margin: 0 0 14px;
+  color: #7b8794;
+  font-size: 13px;
+}
+
+.empty-action {
+  color: #3478c5;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.appointments-loading {
+  padding: 40px 20px;
+  text-align: center;
+  color: #7b8794;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .appointment-item {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+
+  .appointment-time {
+    min-width: 45px;
+  }
+
+  .appointment-info {
+    width: calc(100% - 60px);
+  }
+
+  .appointment-status {
+    margin-left: 57px;
+  }
+}

@@ -20,7 +20,7 @@ export class DashboardService {
       }
     }
 
-    return [];
+    return []
   }
 
   obtenerEstadisticas() {
@@ -55,15 +55,16 @@ export class DashboardService {
           const fechaLocal = `${fechaCita.getFullYear()}-${String(fechaCita.getMonth() + 1).padStart(2, '0')}-${String(fechaCita.getDate()).padStart(2, '0')}`;
 
           return fechaLocal === fechaHoy;
-        });
+        })
 
         return {
           citasHoy: citasHoy.length,
+          citasLista: citasHoy,
           pacientes: pacientes.length,
           propietarios: propietarios.length,
           servicios: servicios.length
-        };
+        }
       })
-    );
+    )
   }
 }

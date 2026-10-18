@@ -11,13 +11,8 @@ import { DashboardService } from '../../core/services/dashboard.service';
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit {
-  constructor() {
-    console.log('DashboardComponent iniciado');
-  }
-
-
-  private cdr = inject(ChangeDetectorRef);
   private dashboardService = inject(DashboardService);
+  private cdr = inject(ChangeDetectorRef);
 
   estadisticas = {
     citasHoy: 0,
@@ -26,6 +21,8 @@ export class DashboardComponent implements OnInit {
     servicios: 0
   };
 
+  citasHoy: any[] = [];
+
   cargando = true;
   errorMensaje = '';
 
@@ -33,6 +30,7 @@ export class DashboardComponent implements OnInit {
     this.dashboardService.obtenerEstadisticas().subscribe({
       next: (datos) => {
         this.estadisticas = datos;
+        this.citasHoy = datos.citasLista;
         this.cargando = false;
         this.cdr.detectChanges();
       },
@@ -43,5 +41,39 @@ export class DashboardComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  obtenerHora(fecha: string): string {
+    if (!fecha) {
+      return '--:--';
+    }
+
+    const fechaCita = new Date(fecha);
+
+    return fechaCita.toLocaleTimeString('es-PE', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  }
+
+  obtenerClaseEstado(estado: string): string {
+    switch (estado?.toLowerCase()) {
+      case 'confirmada':
+        return 'status-confirmada';
+
+      case 'enatencion':
+      case 'en atención':
+        return 'status-atencion';
+
+      case 'completada':
+        return 'status-completada';
+
+      case 'cancelada':
+        return 'status-cancelada';
+
+      default:
+        return 'status-pendiente';
+    }
   }
 }

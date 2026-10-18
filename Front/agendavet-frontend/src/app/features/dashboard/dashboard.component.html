@@ -87,17 +87,46 @@
       </div>
     </article>
 
-    <article class="content-card information-card">
+    <article class="content-card appointments-card">
       <div class="card-heading">
         <div>
-          <h2>AgendaVet</h2>
-          <p>Gestión veterinaria centralizada.</p>
+          <h2>Citas de hoy</h2>
+          <p>Resumen de las atenciones programadas para hoy.</p>
+        </div>
+        <a routerLink="/citas" class="view-all">Ver todas</a>
+      </div>
+
+      <div class="appointments-list" *ngIf="!cargando && citasHoy.length > 0">
+        <div class="appointment-item" *ngFor="let cita of citasHoy">
+          <div class="appointment-time">
+            {{ obtenerHora(cita.fechaHora) }}
+          </div>
+
+          <div class="appointment-info">
+            <strong>{{ cita.pacienteNombre || 'Paciente' }}</strong>
+            <span>
+              {{ cita.servicioNombre || 'Consulta' }}
+              <ng-container *ngIf="cita.veterinarioNombre">
+                · {{ cita.veterinarioNombre }}
+              </ng-container>
+            </span>
+          </div>
+
+          <span class="appointment-status" [ngClass]="obtenerClaseEstado(cita.estado)">
+            {{ cita.estado || 'Pendiente' }}
+          </span>
         </div>
       </div>
-      <div class="information-body">
-        <div class="information-symbol">+</div>
-        <h3>Todo organizado en un solo lugar</h3>
-        <p>Administra la agenda, registra pacientes y consulta su información clínica desde una sola plataforma.</p>
+
+      <div class="appointments-empty" *ngIf="!cargando && citasHoy.length === 0">
+        <div class="empty-icon">✓</div>
+        <h3>No hay citas para hoy</h3>
+        <p>No tienes atenciones programadas para el día de hoy.</p>
+        <a routerLink="/citas" class="empty-action">Programar una cita</a>
+      </div>
+
+      <div class="appointments-loading" *ngIf="cargando">
+        Cargando citas...
       </div>
     </article>
   </div>
