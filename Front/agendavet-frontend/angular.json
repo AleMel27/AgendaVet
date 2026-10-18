@@ -3,11 +3,11 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "analytics": "99f5ca10-ed4e-4d57-985a-7e836a822c83"
+    "analytics": "05499172-d90e-424a-a0ae-e7b14ea6421e"
   },
   "newProjectRoot": "projects",
   "projects": {
-    "agenda-vet": {
+    "agendavet-frontend": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -25,7 +25,10 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.css"]
+            "styles": [
+              "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
+              "src/styles.css"
+            ]
           },
           "configurations": {
             "production": {
@@ -55,10 +58,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "agenda-vet:build:production"
+              "buildTarget": "agendavet-frontend:build:production"
             },
             "development": {
-              "buildTarget": "agenda-vet:build:development"
+              "buildTarget": "agendavet-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"

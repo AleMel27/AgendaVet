@@ -1,0 +1,104 @@
+<section class="dashboard">
+  <div class="welcome-section">
+    <div>
+      <p class="eyebrow">PANEL DE CONTROL</p>
+      <h1>Dashboard</h1>
+      <p class="subtitle">Bienvenido a AgendaVet. Este es el resumen de tu clínica.</p>
+    </div>
+    <a class="primary-action" routerLink="/citas">Ver citas</a>
+  </div>
+
+  <div class="notice" *ngIf="errorMensaje">
+    <div class="notice-icon">!</div>
+    <div>
+      <strong>No se pudieron cargar los datos</strong>
+      <p>{{ errorMensaje }}</p>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <article class="stat-card">
+      <div class="stat-heading">
+        <span>Citas de hoy</span>
+        <span class="stat-icon blue">▣</span>
+      </div>
+      <strong class="stat-value">{{ cargando ? '...' : estadisticas.citasHoy }}</strong>
+      <span class="stat-description">Citas programadas para hoy</span>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-heading">
+        <span>Pacientes registrados</span>
+        <span class="stat-icon purple">♡</span>
+      </div>
+      <strong class="stat-value">{{ cargando ? '...' : estadisticas.pacientes }}</strong>
+      <span class="stat-description">Total de pacientes registrados</span>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-heading">
+        <span>Propietarios</span>
+        <span class="stat-icon green">♙</span>
+      </div>
+      <strong class="stat-value">{{ cargando ? '...' : estadisticas.propietarios }}</strong>
+      <span class="stat-description">Total de propietarios registrados</span>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-heading">
+        <span>Servicios activos</span>
+        <span class="stat-icon orange">✚</span>
+      </div>
+      <strong class="stat-value">{{ cargando ? '...' : estadisticas.servicios }}</strong>
+      <span class="stat-description">Servicios activos en la clínica</span>
+    </article>
+  </div>
+
+  <div class="dashboard-grid">
+    <article class="content-card">
+      <div class="card-heading">
+        <div>
+          <h2>Accesos rápidos</h2>
+          <p>Accede a las funciones más utilizadas.</p>
+        </div>
+      </div>
+
+      <div class="quick-links">
+        <a routerLink="/citas">
+          <span class="quick-icon blue">▣</span>
+          <span><strong>Gestionar citas</strong><small>Programación y seguimiento</small></span>
+          <span class="arrow">›</span>
+        </a>
+        <a routerLink="/pacientes">
+          <span class="quick-icon purple">♡</span>
+          <span><strong>Ver pacientes</strong><small>Fichas de animales</small></span>
+          <span class="arrow">›</span>
+        </a>
+        <a routerLink="/propietarios">
+          <span class="quick-icon green">♙</span>
+          <span><strong>Propietarios</strong><small>Datos de contacto</small></span>
+          <span class="arrow">›</span>
+        </a>
+        <a routerLink="/historias-clinicas">
+          <span class="quick-icon orange">▤</span>
+          <span><strong>Historias clínicas</strong><small>Atenciones y diagnósticos</small></span>
+          <span class="arrow">›</span>
+        </a>
+      </div>
+    </article>
+
+    <article class="content-card information-card">
+      <div class="card-heading">
+        <div>
+          <h2>AgendaVet</h2>
+          <p>Gestión veterinaria centralizada.</p>
+        </div>
+      </div>
+      <div class="information-body">
+        <div class="information-symbol">+</div>
+        <h3>Todo organizado en un solo lugar</h3>
+        <p>Administra la agenda, registra pacientes y consulta su información clínica desde una sola plataforma.</p>
+      </div>
+    </article>
+  </div>
+</section>
