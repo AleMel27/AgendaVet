@@ -15,10 +15,6 @@
   background: #f5f8fc;
 }
 
-/* =========================
-   BARRA LATERAL
-========================= */
-
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;

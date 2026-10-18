@@ -27,10 +27,13 @@
         <span class="nav-icon">♙</span>
         <span>Propietarios</span>
       </a>
-      <a routerLink="/historias-clinicas" routerLinkActive="active" (click)="menuAbierto = false">
+
+      <a *ngIf="puedeVerHistoriasClinicas" routerLink="/historias-clinicas" routerLinkActive="active"
+        (click)="menuAbierto = false">
         <span class="nav-icon">▤</span>
         <span>Historias clínicas</span>
       </a>
+
 
       <div class="menu-label secondary-label">GESTIÓN</div>
 
@@ -38,7 +41,8 @@
         <span class="nav-icon">✚</span>
         <span>Servicios</span>
       </a>
-      <a routerLink="/usuarios" routerLinkActive="active" (click)="menuAbierto = false">
+
+      <a *ngIf="puedeVerUsuarios" routerLink="/usuarios" routerLinkActive="active" (click)="menuAbierto = false">
         <span class="nav-icon">♧</span>
         <span>Usuarios</span>
       </a>
