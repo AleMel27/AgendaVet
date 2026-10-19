@@ -1,0 +1,92 @@
+<div class="app-layout">
+  <aside class="sidebar" [class.sidebar-open]="menuAbierto">
+    <a class="brand" routerLink="/dashboard" (click)="menuAbierto = false">
+      <span class="brand-icon">
+        <i class="fa-solid fa-stethoscope" aria-hidden="true"></i>
+      </span>
+      <span>Agenda<span class="brand-accent">Vet</span></span>
+    </a>
+
+    <div class="menu-label">MENÚ PRINCIPAL</div>
+
+    <nav class="navigation">
+      <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+        (click)="menuAbierto = false">
+        <span class="nav-icon">▦</span>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/citas" routerLinkActive="active" (click)="menuAbierto = false">
+        <span class="nav-icon">▣</span>
+        <span>Citas</span>
+      </a>
+      <a routerLink="/pacientes" routerLinkActive="active" (click)="menuAbierto = false">
+        <span class="nav-icon">♡</span>
+        <span>Pacientes</span>
+      </a>
+      <a routerLink="/propietarios" routerLinkActive="active" (click)="menuAbierto = false">
+        <span class="nav-icon">♙</span>
+        <span>Propietarios</span>
+      </a>
+
+      <a *ngIf="puedeVerHistoriasClinicas" routerLink="/historias-clinicas" routerLinkActive="active"
+        (click)="menuAbierto = false">
+        <span class="nav-icon">▤</span>
+        <span>Historias clínicas</span>
+      </a>
+
+
+      <div class="menu-label secondary-label">GESTIÓN</div>
+
+      <a routerLink="/servicios" routerLinkActive="active" (click)="menuAbierto = false">
+        <span class="nav-icon">✚</span>
+        <span>Servicios</span>
+      </a>
+
+      <a *ngIf="puedeVerUsuarios" routerLink="/usuarios" routerLinkActive="active" (click)="menuAbierto = false">
+        <span class="nav-icon">♧</span>
+        <span>Usuarios</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="footer-avatar">AV</div>
+      <div class="footer-info">
+        <strong>AgendaVet</strong>
+        <span>Gestión veterinaria</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" *ngIf="menuAbierto" (click)="menuAbierto = false"></div>
+
+  <main class="main-area">
+    <header class="topbar">
+      <button class="menu-toggle" type="button" (click)="menuAbierto = !menuAbierto" aria-label="Abrir menú">
+        <i class="fa-solid fa-bars" aria-hidden="true"></i>
+      </button>
+
+      <div class="breadcrumb">
+        <span>AgendaVet</span>
+        <span class="breadcrumb-separator">/</span>
+        <strong>Panel de gestión</strong>
+      </div>
+
+      <div class="user-area">
+        <div class="user-avatar">
+          {{ usuario?.nombre?.charAt(0) || 'U' }}
+        </div>
+        <div class="user-details">
+          <strong>{{ usuario?.nombre }} {{ usuario?.apellido }}</strong>
+          <span>{{ usuario?.rolNombre || 'Usuario' }}</span>
+        </div>
+        <button class="logout-button" type="button" (click)="cerrarSesion()" title="Cerrar sesión">
+          Salir
+        </button>
+      </div>
+    </header>
+
+    <section class="page-content">
+      <router-outlet></router-outlet>
+    </section>
+  </main>
+</div>

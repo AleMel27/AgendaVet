@@ -1,0 +1,6 @@
+@AgendaVet.Api_HostAddress = http://localhost:5027
+
+GET {{AgendaVet.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
