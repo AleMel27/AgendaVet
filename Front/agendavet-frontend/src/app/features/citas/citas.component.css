@@ -12,10 +12,6 @@
   width: 100%;
 }
 
-/* ====================================================
-   HEADER DEL CALENDARIO (ESTILO GOOGLE CALENDAR)
-   ==================================================== */
-
 .calendar-header {
   display: flex;
   align-items: center;
@@ -151,8 +147,6 @@
   border-color: #477fd0;
   background: #fff;
 }
-
-/* VISTA SWITCHER (MES / SEMANA / AGENDA) */
 .view-switcher {
   display: flex;
   background: #edf2f8;

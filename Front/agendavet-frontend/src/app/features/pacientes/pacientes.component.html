@@ -21,64 +21,27 @@
     <span>!</span> {{ errorMensaje }}
   </div>
 
-  <!-- TARJETAS DE ESTADÍSTICAS RÁPIDAS -->
-  <div class="stats-grid">
-    <article class="stat-card">
-      <div class="stat-heading">
-        <span>Total Pacientes</span>
-        <span class="stat-icon purple">🐾</span>
-      </div>
-      <strong class="stat-value">{{ cargando ? '...' : pacientes.length }}</strong>
-      <span class="stat-description">Mascotas en el sistema</span>
-    </article>
-
-    <article class="stat-card">
-      <div class="stat-heading">
-        <span>Caninos</span>
-        <span class="stat-icon blue">🐕</span>
-      </div>
-      <strong class="stat-value">{{ cargando ? '...' : totalCaninos }}</strong>
-      <span class="stat-description">Perros registrados</span>
-    </article>
-
-    <article class="stat-card">
-      <div class="stat-heading">
-        <span>Felinos</span>
-        <span class="stat-icon orange">🐈</span>
-      </div>
-      <strong class="stat-value">{{ cargando ? '...' : totalFelinos }}</strong>
-      <span class="stat-description">Gatos registrados</span>
-    </article>
-
-    <article class="stat-card">
-      <div class="stat-heading">
-        <span>Esterilizados</span>
-        <span class="stat-icon green">✂️</span>
-      </div>
-      <strong class="stat-value">{{ cargando ? '...' : totalEsterilizados }}</strong>
-      <span class="stat-description">Con control reproductivo</span>
-    </article>
-  </div>
-
   <!-- BARRA DE BÚSQUEDA Y FILTROS -->
   <div class="toolbar-card">
     <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input
-        type="text"
-        [(ngModel)]="filtroTexto"
-        placeholder="Buscar por nombre de mascota, raza o propietario..."
-      />
-      <button type="button" class="btn-clear" *ngIf="filtroTexto" (click)="filtroTexto = ''">✕</button>
+      <span class="search-icon">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+      </span>
+      <input type="text" [(ngModel)]="filtroTexto" (ngModelChange)="reiniciarPaginacion()"
+        placeholder="Buscar por nombre de mascota, raza o propietario..." />
+      <button type="button" class="btn-clear" *ngIf="filtroTexto" (click)="filtroTexto = ''; reiniciarPaginacion()"
+        aria-label="Limpiar búsqueda">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
     </div>
 
     <div class="filters-row">
-      <select class="filter-select" [(ngModel)]="filtroEspecie">
+      <select class="filter-select" [(ngModel)]="filtroEspecie" (ngModelChange)="reiniciarPaginacion()">
         <option [ngValue]="null">Todas las Especies</option>
         <option *ngFor="let esp of especies" [ngValue]="esp.idEspecie">{{ esp.nombre }}</option>
       </select>
 
-      <select class="filter-select" [(ngModel)]="filtroSexo">
+      <select class="filter-select" [(ngModel)]="filtroSexo" (ngModelChange)="reiniciarPaginacion()">
         <option value="">Todos los Sexos</option>
         <option value="Macho">Machos</option>
         <option value="Hembra">Hembras</option>
@@ -95,7 +58,9 @@
   <!-- TABLA DE PACIENTES -->
   <div class="content-card table-card" *ngIf="!cargando">
     <div class="empty-state" *ngIf="pacientesFiltrados.length === 0">
-      <div class="empty-emoji">🐶</div>
+      <div class="empty-emoji">
+        <i class="fa-solid fa-dog" aria-hidden="true"></i>
+      </div>
       <h3>No se encontraron pacientes</h3>
       <p>Prueba ajustando los filtros o registra una nueva mascota.</p>
       <button type="button" class="primary-action" (click)="abrirModalCrear()">Registrar Mascota</button>
@@ -115,7 +80,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let p of pacientesFiltrados" (click)="abrirFicha(p)" class="row-clickable">
+          <tr *ngFor="let p of pacientesPaginados" (click)="abrirFicha(p)" class="row-clickable">
             <td>
               <div class="patient-profile">
                 <div class="avatar-pet" [class.avatar-felino]="p.especieNombre?.toLowerCase()?.includes('fel')">
@@ -124,7 +89,8 @@
                 <div class="pet-info">
                   <strong class="pet-name">{{ p.nombre }}</strong>
                   <span class="pet-meta">
-                    <span class="gender-tag" [class.tag-macho]="p.sexo === 'Macho'" [class.tag-hembra]="p.sexo === 'Hembra'">
+                    <span class="gender-tag" [class.tag-macho]="p.sexo === 'Macho'"
+                      [class.tag-hembra]="p.sexo === 'Hembra'">
                       {{ p.sexo === 'Macho' ? '♂ Macho' : '♀ Hembra' }}
                     </span>
                     <span *ngIf="p.color">· {{ p.color }}</span>
@@ -163,7 +129,8 @@
                 <button type="button" class="btn-table-action" (click)="abrirModalEditar(p, $event)" title="Editar">
                   Editar
                 </button>
-                <button type="button" class="btn-table-action btn-del" (click)="eliminarPaciente(p, $event)" title="Eliminar">
+                <button type="button" class="btn-table-action btn-del" (click)="eliminarPaciente(p, $event)"
+                  title="Eliminar">
                   ✕
                 </button>
               </div>
@@ -171,6 +138,34 @@
           </tr>
         </tbody>
       </table>
+    </div>
+    <!-- PAGINACIÓN -->
+    <div class="pagination-container" *ngIf="pacientesFiltrados.length > 0">
+      <div class="pagination-info">
+        Mostrando
+        <strong>{{ primerRegistro }}–{{ ultimoRegistro }}</strong>
+        de
+        <strong>{{ pacientesFiltrados.length }}</strong>
+        pacientes
+      </div>
+
+      <div class="pagination-controls">
+        <button type="button" class="pagination-btn pagination-arrow" (click)="paginaAnterior()"
+          [disabled]="paginaActual === 1" aria-label="Página anterior" title="Página anterior">
+          <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+        </button>
+
+        <button type="button" class="pagination-btn" *ngFor="let pagina of paginas"
+          [class.active]="paginaActual === pagina" [attr.aria-current]="paginaActual === pagina ? 'page' : null"
+          (click)="cambiarPagina(pagina)">
+          {{ pagina }}
+        </button>
+
+        <button type="button" class="pagination-btn pagination-arrow" (click)="paginaSiguiente()"
+          [disabled]="paginaActual === totalPaginas" aria-label="Página siguiente" title="Página siguiente">
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -184,7 +179,9 @@
           <h3>{{ modoEdicion ? 'Editar Paciente' : 'Registrar Nuevo Paciente' }}</h3>
           <p>Ingresa la información general de la mascota y su dueño.</p>
         </div>
-        <button type="button" class="btn-close" (click)="cerrarModalFormulario()">✕</button>
+        <button type="button" class="btn-close" (click)="cerrarModalFormulario()" aria-label="Cerrar">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
       </div>
 
       <form [formGroup]="pacienteForm" (ngSubmit)="guardarPaciente()">
@@ -193,7 +190,8 @@
             <div class="form-group">
               <label for="nombre">Nombre de la Mascota *</label>
               <input id="nombre" type="text" formControlName="nombre" placeholder="Ej: Rocky, Luna, Milo..." />
-              <small class="error-text" *ngIf="pacienteForm.controls.nombre.touched && pacienteForm.controls.nombre.invalid">
+              <small class="error-text"
+                *ngIf="pacienteForm.controls.nombre.touched && pacienteForm.controls.nombre.invalid">
                 El nombre es obligatorio.
               </small>
             </div>
@@ -206,7 +204,8 @@
                   {{ prop.nombre }} {{ prop.apellido }} (DNI: {{ prop.dniCe }})
                 </option>
               </select>
-              <small class="error-text" *ngIf="pacienteForm.controls.idPropietario.touched && pacienteForm.controls.idPropietario.invalid">
+              <small class="error-text"
+                *ngIf="pacienteForm.controls.idPropietario.touched && pacienteForm.controls.idPropietario.invalid">
                 Debes seleccionar un propietario.
               </small>
             </div>
@@ -219,7 +218,8 @@
                 <option value="0" disabled>Selecciona especie</option>
                 <option *ngFor="let esp of especies" [value]="esp.idEspecie">{{ esp.nombre }}</option>
               </select>
-              <small class="error-text" *ngIf="pacienteForm.controls.idEspecie.touched && pacienteForm.controls.idEspecie.invalid">
+              <small class="error-text"
+                *ngIf="pacienteForm.controls.idEspecie.touched && pacienteForm.controls.idEspecie.invalid">
                 La especie es obligatoria.
               </small>
             </div>
@@ -265,12 +265,14 @@
 
           <div class="form-group">
             <label for="observaciones">Observaciones / Alergias / Antecedentes</label>
-            <textarea id="observaciones" rows="3" formControlName="observaciones" placeholder="Detalles de salud, temperamento, cirugías previas..."></textarea>
+            <textarea id="observaciones" rows="3" formControlName="observaciones"
+              placeholder="Detalles de salud, temperamento, cirugías previas..."></textarea>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn-secondary" (click)="cerrarModalFormulario()" [disabled]="guardando">Cancelar</button>
+          <button type="button" class="btn-secondary" (click)="cerrarModalFormulario()"
+            [disabled]="guardando">Cancelar</button>
           <button type="submit" class="btn-primary" [disabled]="guardando">
             <span *ngIf="!guardando">{{ modoEdicion ? 'Actualizar Paciente' : 'Guardar Paciente' }}</span>
             <span *ngIf="guardando">Guardando...</span>
@@ -290,12 +292,16 @@
           <span class="ficha-badge">Ficha Médica</span>
           <span class="paciente-id">ID #{{ pacienteSeleccionado.idPaciente }}</span>
         </div>
-        <button type="button" class="btn-close" (click)="cerrarFicha()">✕</button>
+        <button type="button" class="btn-close" (click)="cerrarFicha()" aria-label="Cerrar">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
       </div>
 
       <div class="modal-body ficha-body">
         <div class="ficha-hero">
-          <div class="ficha-avatar">🐾</div>
+          <div class="ficha-avatar">
+            <i class="fa-solid fa-paw" aria-hidden="true"></i>
+          </div>
           <div class="ficha-title-block">
             <h2>{{ pacienteSeleccionado.nombre }}</h2>
             <p>{{ pacienteSeleccionado.especieNombre }} · {{ pacienteSeleccionado.razaNombre || 'Mestizo' }}</p>
@@ -320,7 +326,8 @@
 
           <div class="ficha-item">
             <span class="f-label">Esterilizado</span>
-            <span class="badge-status" [class.badge-si]="pacienteSeleccionado.esterilizado" [class.badge-no]="!pacienteSeleccionado.esterilizado">
+            <span class="badge-status" [class.badge-si]="pacienteSeleccionado.esterilizado"
+              [class.badge-no]="!pacienteSeleccionado.esterilizado">
               {{ pacienteSeleccionado.esterilizado ? 'Sí' : 'No' }}
             </span>
           </div>
@@ -345,7 +352,8 @@
           Editar Datos
         </button>
         <button type="button" class="btn-primary" (click)="agendarCitaParaPaciente(pacienteSeleccionado)">
-          📅 Agendar Cita
+          <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+          Agendar Cita
         </button>
       </div>
     </div>

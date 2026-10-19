@@ -1,5 +1,6 @@
 ﻿using AgendaVet.Api.DTOs.Request;
 using AgendaVet.Api.DTOs.Response;
+using AgendaVet.Api.Exceptions;
 using AgendaVet.Api.Interfaces;
 using AgendaVet.Api.Models;
 using Microsoft.EntityFrameworkCore;
@@ -118,15 +119,26 @@ namespace AgendaVet.Api.Services
             return await ObtenerPorIdAsync(id);
         }
 
+
         public async Task<bool> CambiarEstadoAsync(int id, string nuevoEstado)
         {
             var entidad = await _context.Citas.FindAsync(id);
             if (entidad == null) return false;
 
-            entidad.Estado = nuevoEstado;
+            entidad.Estado = nuevoEstado switch
+            {
+                "EnAtencion" => "En Atencion",
+                "Pendiente" => "Pendiente",
+                "Confirmada" => "Confirmada",
+                "Completada" => "Completada",
+                "Cancelada" => "Cancelada",
+                _ => throw new BusinessException("El estado indicado no es válido.")
+            };
+
             await _context.SaveChangesAsync();
             return true;
         }
+
 
         public async Task<bool> EliminarAsync(int id)
         {

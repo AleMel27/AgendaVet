@@ -33,6 +33,10 @@ export class PacientesComponent implements OnInit {
   filtroEspecie: number | null = null;
   filtroSexo = '';
 
+  // Paginación
+  paginaActual = 1;
+  registrosPorPagina = 10;
+
   cargando = true;
   guardando = false;
   errorMensaje = '';
@@ -127,6 +131,58 @@ export class PacientesComponent implements OnInit {
 
       return true;
     });
+  }
+  // Paginación de pacientes
+  get totalPaginas(): number {
+    return Math.ceil(this.pacientesFiltrados.length / this.registrosPorPagina);
+  }
+
+  get pacientesPaginados(): Paciente[] {
+    const inicio = (this.paginaActual - 1) * this.registrosPorPagina;
+    return this.pacientesFiltrados.slice(inicio, inicio + this.registrosPorPagina);
+  }
+
+  get paginas(): number[] {
+    return Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
+  }
+
+  get primerRegistro(): number {
+    return this.pacientesFiltrados.length === 0
+      ? 0
+      : (this.paginaActual - 1) * this.registrosPorPagina + 1;
+  }
+
+  get ultimoRegistro(): number {
+    return Math.min(
+      this.paginaActual * this.registrosPorPagina,
+      this.pacientesFiltrados.length
+    );
+  }
+
+  cambiarPagina(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.totalPaginas) {
+      this.paginaActual = pagina;
+    }
+  }
+
+  paginaAnterior(): void {
+    this.cambiarPagina(this.paginaActual - 1);
+  }
+
+  paginaSiguiente(): void {
+    this.cambiarPagina(this.paginaActual + 1);
+  }
+
+  reiniciarPaginacion(): void {
+    this.paginaActual = 1;
+  }
+
+  ajustarPaginacion(): void {
+    if (this.totalPaginas === 0) {
+      this.paginaActual = 1;
+    } else if (this.paginaActual > this.totalPaginas) {
+      this.paginaActual = this.totalPaginas;
+    }
   }
 
   // Estadísticas rápidas
@@ -254,6 +310,7 @@ export class PacientesComponent implements OnInit {
         next: (creado) => {
           this.guardando = false;
           this.pacientes.unshift(creado);
+          this.reiniciarPaginacion();
           this.cerrarModalFormulario();
           this.mostrarMensaje('¡Paciente registrado con éxito!');
           this.cdr.detectChanges();
@@ -279,6 +336,7 @@ export class PacientesComponent implements OnInit {
     this.pacienteService.eliminar(paciente.idPaciente).subscribe({
       next: () => {
         this.pacientes = this.pacientes.filter(p => p.idPaciente !== paciente.idPaciente);
+        this.ajustarPaginacion();
         this.guardando = false;
         if (this.modalFichaAbierta && this.pacienteSeleccionado?.idPaciente === paciente.idPaciente) {
           this.cerrarFicha();

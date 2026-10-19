@@ -29,7 +29,6 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.dashboardService.obtenerEstadisticas().subscribe({
       next: (datos) => {
-        console.log('Estadísticas recibidas:', datos);
 
         this.estadisticas = {
           citasHoy: datos.citasHoy,
