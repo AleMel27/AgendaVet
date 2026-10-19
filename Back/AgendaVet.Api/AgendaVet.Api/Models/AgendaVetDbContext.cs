@@ -1,4 +1,4 @@
-﻿using AgendaVet.Api.Models;
+using AgendaVet.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AgendaVet.Api.Models
@@ -42,7 +42,7 @@ namespace AgendaVet.Api.Models
                 entity.Property(e => e.Password).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.Telefono).HasMaxLength(20);
                 entity.Property(e => e.Activo).HasDefaultValue(true);
-                entity.Property(e => e.FechaRegistro).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.FechaRegistro).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
                 entity.HasOne<Rol>()
                       .WithMany()
@@ -61,7 +61,7 @@ namespace AgendaVet.Api.Models
                 entity.Property(e => e.Telefono).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.Email).HasMaxLength(100);
                 entity.Property(e => e.Direccion).HasMaxLength(200);
-                entity.Property(e => e.FechaRegistro).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.FechaRegistro).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             });
 
             // 4. ESPECIE
@@ -91,7 +91,7 @@ namespace AgendaVet.Api.Models
                 entity.Property(e => e.Sexo).IsRequired().HasMaxLength(10);
                 entity.Property(e => e.Color).HasMaxLength(30);
                 entity.Property(e => e.Observaciones).HasMaxLength(500);
-                entity.Property(e => e.FechaRegistro).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.FechaRegistro).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
                 entity.HasOne<Propietario>()
                       .WithMany()
@@ -127,7 +127,7 @@ namespace AgendaVet.Api.Models
                 entity.Property(e => e.Estado).IsRequired().HasMaxLength(30).HasDefaultValue("Pendiente");
                 entity.Property(e => e.Motivo).HasMaxLength(255);
                 entity.Property(e => e.NotasAgendamiento).HasMaxLength(500);
-                entity.Property(e => e.FechaCreacion).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.FechaCreacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
                 entity.HasOne<Paciente>()
                       .WithMany()

@@ -22,6 +22,20 @@ export const routes: Routes = [
           )
       },
       {
+        path: 'citas',
+        loadComponent: () =>
+          import('./features/citas/citas.component').then(
+            m => m.CitasComponent
+          )
+      },
+      {
+        path: 'pacientes',
+        loadComponent: () =>
+          import('./features/pacientes/pacientes.component').then(
+            m => m.PacientesComponent
+          )
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'

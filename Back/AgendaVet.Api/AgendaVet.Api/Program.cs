@@ -110,4 +110,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AgendaVetDbContext>();
+    AgendaVet.Api.DbInitializer.Initialize(context);
+}
+
 app.Run();

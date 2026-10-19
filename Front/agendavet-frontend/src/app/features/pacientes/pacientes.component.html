@@ -1,0 +1,353 @@
+<div class="pacientes-page">
+  <!-- ENCABEZADO -->
+  <div class="welcome-section">
+    <div>
+      <p class="eyebrow">EXPEDIENTE VETERINARIO</p>
+      <h1>Pacientes</h1>
+      <p class="subtitle">Administra los expedientes y fichas médicas de las mascotas registradas.</p>
+    </div>
+    <button type="button" class="primary-action" (click)="abrirModalCrear()">
+      <span class="btn-icon">+</span>
+      <span>Registrar Paciente</span>
+    </button>
+  </div>
+
+  <!-- BANNERS -->
+  <div class="alert-banner alert-success" *ngIf="exitoMensaje">
+    <span>✓</span> {{ exitoMensaje }}
+  </div>
+
+  <div class="alert-banner alert-error" *ngIf="errorMensaje">
+    <span>!</span> {{ errorMensaje }}
+  </div>
+
+  <!-- TARJETAS DE ESTADÍSTICAS RÁPIDAS -->
+  <div class="stats-grid">
+    <article class="stat-card">
+      <div class="stat-heading">
+        <span>Total Pacientes</span>
+        <span class="stat-icon purple">🐾</span>
+      </div>
+      <strong class="stat-value">{{ cargando ? '...' : pacientes.length }}</strong>
+      <span class="stat-description">Mascotas en el sistema</span>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-heading">
+        <span>Caninos</span>
+        <span class="stat-icon blue">🐕</span>
+      </div>
+      <strong class="stat-value">{{ cargando ? '...' : totalCaninos }}</strong>
+      <span class="stat-description">Perros registrados</span>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-heading">
+        <span>Felinos</span>
+        <span class="stat-icon orange">🐈</span>
+      </div>
+      <strong class="stat-value">{{ cargando ? '...' : totalFelinos }}</strong>
+      <span class="stat-description">Gatos registrados</span>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-heading">
+        <span>Esterilizados</span>
+        <span class="stat-icon green">✂️</span>
+      </div>
+      <strong class="stat-value">{{ cargando ? '...' : totalEsterilizados }}</strong>
+      <span class="stat-description">Con control reproductivo</span>
+    </article>
+  </div>
+
+  <!-- BARRA DE BÚSQUEDA Y FILTROS -->
+  <div class="toolbar-card">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        [(ngModel)]="filtroTexto"
+        placeholder="Buscar por nombre de mascota, raza o propietario..."
+      />
+      <button type="button" class="btn-clear" *ngIf="filtroTexto" (click)="filtroTexto = ''">✕</button>
+    </div>
+
+    <div class="filters-row">
+      <select class="filter-select" [(ngModel)]="filtroEspecie">
+        <option [ngValue]="null">Todas las Especies</option>
+        <option *ngFor="let esp of especies" [ngValue]="esp.idEspecie">{{ esp.nombre }}</option>
+      </select>
+
+      <select class="filter-select" [(ngModel)]="filtroSexo">
+        <option value="">Todos los Sexos</option>
+        <option value="Macho">Machos</option>
+        <option value="Hembra">Hembras</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- SPINNER -->
+  <div class="loading-state" *ngIf="cargando">
+    <div class="spinner"></div>
+    <p>Cargando lista de pacientes...</p>
+  </div>
+
+  <!-- TABLA DE PACIENTES -->
+  <div class="content-card table-card" *ngIf="!cargando">
+    <div class="empty-state" *ngIf="pacientesFiltrados.length === 0">
+      <div class="empty-emoji">🐶</div>
+      <h3>No se encontraron pacientes</h3>
+      <p>Prueba ajustando los filtros o registra una nueva mascota.</p>
+      <button type="button" class="primary-action" (click)="abrirModalCrear()">Registrar Mascota</button>
+    </div>
+
+    <div class="table-responsive" *ngIf="pacientesFiltrados.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Mascota</th>
+            <th>Especie / Raza</th>
+            <th>Propietario (Dueño)</th>
+            <th>Edad</th>
+            <th>Esterilizado</th>
+            <th>Registro</th>
+            <th class="text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of pacientesFiltrados" (click)="abrirFicha(p)" class="row-clickable">
+            <td>
+              <div class="patient-profile">
+                <div class="avatar-pet" [class.avatar-felino]="p.especieNombre?.toLowerCase()?.includes('fel')">
+                  {{ p.nombre.charAt(0) }}
+                </div>
+                <div class="pet-info">
+                  <strong class="pet-name">{{ p.nombre }}</strong>
+                  <span class="pet-meta">
+                    <span class="gender-tag" [class.tag-macho]="p.sexo === 'Macho'" [class.tag-hembra]="p.sexo === 'Hembra'">
+                      {{ p.sexo === 'Macho' ? '♂ Macho' : '♀ Hembra' }}
+                    </span>
+                    <span *ngIf="p.color">· {{ p.color }}</span>
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="specie-info">
+                <span class="badge-specie">{{ p.especieNombre }}</span>
+                <small class="breed-text">{{ p.razaNombre || 'Mestizo / Criollo' }}</small>
+              </div>
+            </td>
+            <td>
+              <div class="owner-info">
+                <strong>{{ p.propietarioNombreCompleto }}</strong>
+                <small>Titular responsable</small>
+              </div>
+            </td>
+            <td>
+              <span class="age-text">{{ calcularEdad(p.fechaNacimiento) }}</span>
+            </td>
+            <td>
+              <span class="badge-status" [class.badge-si]="p.esterilizado" [class.badge-no]="!p.esterilizado">
+                {{ p.esterilizado ? 'Sí' : 'No' }}
+              </span>
+            </td>
+            <td>
+              <span class="date-text">{{ p.fechaRegistro | slice: 0: 10 }}</span>
+            </td>
+            <td class="text-right" (click)="$event.stopPropagation()">
+              <div class="actions-group">
+                <button type="button" class="btn-table-action" (click)="abrirFicha(p)" title="Ver Ficha">
+                  Ficha
+                </button>
+                <button type="button" class="btn-table-action" (click)="abrirModalEditar(p, $event)" title="Editar">
+                  Editar
+                </button>
+                <button type="button" class="btn-table-action btn-del" (click)="eliminarPaciente(p, $event)" title="Eliminar">
+                  ✕
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: REGISTRAR / EDITAR PACIENTE             -->
+  <!-- ============================================== -->
+  <div class="modal-backdrop" *ngIf="modalFormularioAbierto" (click)="cerrarModalFormulario()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>{{ modoEdicion ? 'Editar Paciente' : 'Registrar Nuevo Paciente' }}</h3>
+          <p>Ingresa la información general de la mascota y su dueño.</p>
+        </div>
+        <button type="button" class="btn-close" (click)="cerrarModalFormulario()">✕</button>
+      </div>
+
+      <form [formGroup]="pacienteForm" (ngSubmit)="guardarPaciente()">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nombre">Nombre de la Mascota *</label>
+              <input id="nombre" type="text" formControlName="nombre" placeholder="Ej: Rocky, Luna, Milo..." />
+              <small class="error-text" *ngIf="pacienteForm.controls.nombre.touched && pacienteForm.controls.nombre.invalid">
+                El nombre es obligatorio.
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="idPropietario">Propietario *</label>
+              <select id="idPropietario" formControlName="idPropietario">
+                <option value="0" disabled>Selecciona el dueño</option>
+                <option *ngFor="let prop of propietarios" [value]="prop.idPropietario">
+                  {{ prop.nombre }} {{ prop.apellido }} (DNI: {{ prop.dniCe }})
+                </option>
+              </select>
+              <small class="error-text" *ngIf="pacienteForm.controls.idPropietario.touched && pacienteForm.controls.idPropietario.invalid">
+                Debes seleccionar un propietario.
+              </small>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="idEspecie">Especie *</label>
+              <select id="idEspecie" formControlName="idEspecie">
+                <option value="0" disabled>Selecciona especie</option>
+                <option *ngFor="let esp of especies" [value]="esp.idEspecie">{{ esp.nombre }}</option>
+              </select>
+              <small class="error-text" *ngIf="pacienteForm.controls.idEspecie.touched && pacienteForm.controls.idEspecie.invalid">
+                La especie es obligatoria.
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="idRaza">Raza</label>
+              <select id="idRaza" formControlName="idRaza">
+                <option [ngValue]="null">Mestizo / Sin especificar</option>
+                <option *ngFor="let rz of razasFiltradas" [value]="rz.idRaza">{{ rz.nombre }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="sexo">Sexo *</label>
+              <select id="sexo" formControlName="sexo">
+                <option value="Macho">Macho</option>
+                <option value="Hembra">Hembra</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="fechaNacimiento">Fecha de Nacimiento Estimada</label>
+              <input id="fechaNacimiento" type="date" formControlName="fechaNacimiento" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="color">Color / Pelaje</label>
+              <input id="color" type="text" formControlName="color" placeholder="Ej: Blanco con manchas marrones" />
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label class="custom-checkbox">
+                <input type="checkbox" formControlName="esterilizado" />
+                <span class="checkmark"></span>
+                <span class="checkbox-label">¿La mascota está esterilizada?</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="observaciones">Observaciones / Alergias / Antecedentes</label>
+            <textarea id="observaciones" rows="3" formControlName="observaciones" placeholder="Detalles de salud, temperamento, cirugías previas..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="cerrarModalFormulario()" [disabled]="guardando">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="guardando">
+            <span *ngIf="!guardando">{{ modoEdicion ? 'Actualizar Paciente' : 'Guardar Paciente' }}</span>
+            <span *ngIf="guardando">Guardando...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: FICHA DEL PACIENTE                      -->
+  <!-- ============================================== -->
+  <div class="modal-backdrop" *ngIf="modalFichaAbierta && pacienteSeleccionado" (click)="cerrarFicha()">
+    <div class="modal-dialog modal-ficha" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="header-status-pill">
+          <span class="ficha-badge">Ficha Médica</span>
+          <span class="paciente-id">ID #{{ pacienteSeleccionado.idPaciente }}</span>
+        </div>
+        <button type="button" class="btn-close" (click)="cerrarFicha()">✕</button>
+      </div>
+
+      <div class="modal-body ficha-body">
+        <div class="ficha-hero">
+          <div class="ficha-avatar">🐾</div>
+          <div class="ficha-title-block">
+            <h2>{{ pacienteSeleccionado.nombre }}</h2>
+            <p>{{ pacienteSeleccionado.especieNombre }} · {{ pacienteSeleccionado.razaNombre || 'Mestizo' }}</p>
+          </div>
+        </div>
+
+        <div class="ficha-details-grid">
+          <div class="ficha-item">
+            <span class="f-label">Sexo</span>
+            <strong>{{ pacienteSeleccionado.sexo }}</strong>
+          </div>
+
+          <div class="ficha-item">
+            <span class="f-label">Edad Estimada</span>
+            <strong>{{ calcularEdad(pacienteSeleccionado.fechaNacimiento) }}</strong>
+          </div>
+
+          <div class="ficha-item">
+            <span class="f-label">Color / Pelaje</span>
+            <strong>{{ pacienteSeleccionado.color || 'No especificado' }}</strong>
+          </div>
+
+          <div class="ficha-item">
+            <span class="f-label">Esterilizado</span>
+            <span class="badge-status" [class.badge-si]="pacienteSeleccionado.esterilizado" [class.badge-no]="!pacienteSeleccionado.esterilizado">
+              {{ pacienteSeleccionado.esterilizado ? 'Sí' : 'No' }}
+            </span>
+          </div>
+
+          <div class="ficha-item full-width highlight-owner">
+            <span class="f-label">Propietario</span>
+            <div class="owner-box">
+              <strong>{{ pacienteSeleccionado.propietarioNombreCompleto }}</strong>
+              <small>Responsable registrado</small>
+            </div>
+          </div>
+
+          <div class="ficha-item full-width" *ngIf="pacienteSeleccionado.observaciones">
+            <span class="f-label">Observaciones y Alergias</span>
+            <p class="obs-text">{{ pacienteSeleccionado.observaciones }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer footer-ficha">
+        <button type="button" class="btn-secondary" (click)="abrirModalEditar(pacienteSeleccionado)">
+          Editar Datos
+        </button>
+        <button type="button" class="btn-primary" (click)="agendarCitaParaPaciente(pacienteSeleccionado)">
+          📅 Agendar Cita
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
