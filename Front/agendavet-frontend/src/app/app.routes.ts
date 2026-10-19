@@ -43,9 +43,8 @@ export const routes: Routes = [
           )
       },
       {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
+        path: 'historias-clinicas',
+        loadComponent: () => import('./features/historias-clinicas/historias-clinicas.component').then(m => m.HistoriasClinicasComponent)
       },
       {
         path: '**',
