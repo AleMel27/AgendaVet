@@ -7,7 +7,7 @@ import { forkJoin, map } from 'rxjs';
 })
 export class DashboardService {
   private http = inject(HttpClient);
-  private apiUrl = 'https://localhost:7188/api';
+  private apiUrl = 'http://localhost:5027/api';
 
   private obtenerLista(respuesta: any): any[] {
     if (Array.isArray(respuesta)) {

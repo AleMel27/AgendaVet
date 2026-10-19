@@ -7,9 +7,9 @@ import { LoginRequest, LoginResponse } from '../models/auth.model';
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiUrl = 'https://localhost:7188/api/Auth';
+  private readonly apiUrl = 'http://localhost:5027/api/Auth';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(
