@@ -1,0 +1,191 @@
+<div>
+    <!-- Alerta de éxito -->
+    <div *ngIf="exitoMensaje"
+        style="background-color: #d1fae5; color: #065f46; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-weight: 500; font-size: 14px;">
+        {{ exitoMensaje }}
+    </div>
+
+    <!-- Encabezado -->
+    <div class="header-flex">
+        <div>
+            <h1 class="title-main">Propietarios</h1>
+            <p class="sub-title">Gestión de propietarios registrados en el sistema</p>
+        </div>
+        <button (click)="abrirModalCrear()" class="btn-add">
+            + Registrar Propietario
+        </button>
+    </div>
+
+    <!-- Tarjeta con Tabla -->
+    <div class="card-table">
+        <div style="overflow-x: auto;">
+            <table class="tbl-propietarios">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Nombres y Apellidos</th>
+                        <th style="width: 12%;">DNI</th>
+                        <th style="width: 13%;">Teléfono</th>
+                        <th style="width: 22%;">Correo</th>
+                        <th style="width: 18%;">Dirección</th>
+                        <th style="width: 10%; text-align: center;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <!-- Carga -->
+                    <tr *ngIf="cargando">
+                        <td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">
+                            Cargando propietarios...
+                        </td>
+                    </tr>
+
+                    <!-- Vacío -->
+                    <tr *ngIf="!cargando && propietarios.length === 0">
+                        <td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">
+                            No hay propietarios registrados.
+                        </td>
+                    </tr>
+
+                    <!-- Filas de datos -->
+                    <tr *ngFor="let p of propietarios">
+                        <td class="txt-nombre">{{ p.nombre }} {{ p.apellido }}</td>
+                        <td style="font-family: monospace;">{{ p.dniCe }}</td>
+                        <td>{{ p.telefono }}</td>
+                        <td>{{ p.email || 'N/A' }}</td>
+                        <td>{{ p.direccion || 'N/A' }}</td>
+                        <td style="text-align: center;">
+                            <div class="acciones-container">
+                                <!-- Botón Editar -->
+                                <button (click)="abrirModalEditar(p)" title="Editar" class="btn-icon-edit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                        <path d="m15 5 4 4" />
+                                    </svg>
+                                </button>
+                                <!-- Botón Eliminar -->
+                                <button (click)="darDeBaja(p.idPropietario)" title="Eliminar" class="btn-icon-delete">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M3 6h18" />
+                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                        <line x1="10" x2="10" y1="11" y2="17" />
+                                        <line x1="14" x2="14" y1="11" y2="17" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="footer-pager">
+            <div>
+                Mostrando página <strong>{{ paginaActual }}</strong> de <strong>{{ totalPaginas }}</strong>
+                <span style="color: #94a3b8; margin-left: 8px;">(Total: {{ totalRegistros }})</span>
+            </div>
+
+            <div>
+                <button (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1" class="btn-pager">
+                    Anterior
+                </button>
+                <button (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual >= totalPaginas"
+                    class="btn-pager">
+                    Siguiente
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE REGISTRO / EDICIÓN -->
+    <div *ngIf="modalFormularioAbierto"
+        style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px;">
+        <div
+            style="background: white; border-radius: 12px; width: 100%; max-width: 550px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); overflow: hidden;">
+
+            <!-- Cabecera Modal -->
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #1e293b;">
+                    {{ modoEdicion ? 'Editar Propietario' : 'Registrar Nuevo Propietario' }}
+                </h3>
+                <button (click)="cerrarModalFormulario()"
+                    style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b;">&times;</button>
+            </div>
+
+            <!-- Cuerpo / Formulario -->
+            <form [formGroup]="propietarioForm" (ngSubmit)="guardarPropietario()" style="padding: 24px;">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label
+                            style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Nombres
+                            *</label>
+                        <input type="text" formControlName="nombre" placeholder="Ej. Juan"
+                            style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Apellidos
+                            *</label>
+                        <input type="text" formControlName="apellido" placeholder="Ej. Pérez"
+                            style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label
+                            style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">DNI
+                            / CE *</label>
+                        <input type="text" formControlName="dniCe" placeholder="Ej. 74956780"
+                            style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Teléfono
+                            *</label>
+                        <input type="text" formControlName="telefono" placeholder="Ej. 956123415"
+                            style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label
+                        style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Correo
+                        Electrónico</label>
+                    <input type="email" formControlName="email" placeholder="correo@example.com"
+                        style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <label
+                        style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Dirección</label>
+                    <input type="text" formControlName="direccion" placeholder="Ej. Av. Larco 123, Miraflores"
+                        style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+                </div>
+
+                <!-- Botones de Acción Modal -->
+                <div
+                    style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                    <button type="button" (click)="cerrarModalFormulario()"
+                        style="padding: 10px 16px; background: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; border-radius: 6px; font-weight: 500; cursor: pointer;">
+                        Cancelar
+                    </button>
+                    <button type="submit" [disabled]="guardando"
+                        style="padding: 10px 20px; background: #f59e0b; border: none; color: #0f172a; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        {{ guardando ? 'Guardando...' : (modoEdicion ? 'Actualizar' : 'Guardar') }}
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>

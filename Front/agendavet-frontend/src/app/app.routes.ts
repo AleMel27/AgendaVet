@@ -36,6 +36,13 @@ export const routes: Routes = [
           )
       },
       {
+        path: 'propietarios',
+        loadComponent: () =>
+          import('./features/propietarios/propietarios.component').then(
+            m => m.PropietariosComponent
+          )
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'
