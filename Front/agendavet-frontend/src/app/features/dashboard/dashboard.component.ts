@@ -29,8 +29,17 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.dashboardService.obtenerEstadisticas().subscribe({
       next: (datos) => {
-        this.estadisticas = datos;
+        console.log('Estadísticas recibidas:', datos);
+
+        this.estadisticas = {
+          citasHoy: datos.citasHoy,
+          pacientes: datos.pacientes,
+          propietarios: datos.propietarios,
+          servicios: datos.servicios
+        };
+
         this.citasHoy = datos.citasLista;
+
         this.cargando = false;
         this.cdr.detectChanges();
       },
@@ -62,7 +71,6 @@ export class DashboardComponent implements OnInit {
       case 'confirmada':
         return 'status-confirmada';
 
-      case 'enatencion':
       case 'en atención':
         return 'status-atencion';
 

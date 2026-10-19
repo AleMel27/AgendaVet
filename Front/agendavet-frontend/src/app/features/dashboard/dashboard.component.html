@@ -103,17 +103,14 @@
           </div>
 
           <div class="appointment-info">
-            <strong>{{ cita.pacienteNombre || 'Paciente' }}</strong>
+            <strong>{{ cita.pacienteNombre }}</strong>
             <span>
-              {{ cita.servicioNombre || 'Consulta' }}
-              <ng-container *ngIf="cita.veterinarioNombre">
-                · {{ cita.veterinarioNombre }}
-              </ng-container>
+              {{ cita.servicioNombre }}
+              · {{ cita.veterinarioNombre }}
             </span>
           </div>
-
           <span class="appointment-status" [ngClass]="obtenerClaseEstado(cita.estado)">
-            {{ cita.estado || 'Pendiente' }}
+            {{ cita.estado }}
           </span>
         </div>
       </div>
