@@ -3,14 +3,18 @@
   <header class="calendar-header">
     <div class="header-left">
       <button type="button" class="btn-nueva-cita" (click)="abrirModalNuevo()">
-        <span class="plus-icon">+</span>
+        <i class="fa-solid fa-plus"></i>
         <span>Nueva Cita</span>
       </button>
 
       <div class="nav-controls">
         <button type="button" class="btn-hoy" (click)="irAHoy()">Hoy</button>
-        <button type="button" class="btn-arrow" (click)="anterior()" title="Anterior">‹</button>
-        <button type="button" class="btn-arrow" (click)="siguiente()" title="Siguiente">›</button>
+        <button type="button" class="btn-arrow" (click)="anterior()" title="Anterior" aria-label="Periodo anterior">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button type="button" class="btn-arrow" (click)="siguiente()" title="Siguiente" aria-label="Periodo siguiente">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
       </div>
 
       <h2 class="periodo-titulo">{{ tituloPeriodo }}</h2>
@@ -36,22 +40,33 @@
         </select>
       </div>
 
-      <!-- SELECTOR DE VISTAS (GOOGLE CALENDAR STYLE) -->
+      <!-- SELECTOR DE VISTAS -->
       <div class="view-switcher">
-        <button type="button" [class.active]="vista === 'mes'" (click)="cambiarVista('mes')">Mes</button>
-        <button type="button" [class.active]="vista === 'semana'" (click)="cambiarVista('semana')">Semana</button>
-        <button type="button" [class.active]="vista === 'agenda'" (click)="cambiarVista('agenda')">Agenda</button>
+        <button type="button" [class.active]="vista === 'mes'" (click)="cambiarVista('mes')">
+          <i class="fa-regular fa-calendar"></i>
+          Mes
+        </button>
+        <button type="button" [class.active]="vista === 'semana'" (click)="cambiarVista('semana')">
+          <i class="fa-solid fa-calendar-week"></i>
+          Semana
+        </button>
+        <button type="button" [class.active]="vista === 'agenda'" (click)="cambiarVista('agenda')">
+          <i class="fa-solid fa-list"></i>
+          Agenda
+        </button>
       </div>
     </div>
   </header>
 
   <!-- MENSAJES DE ESTADO -->
   <div class="alert-banner alert-success" *ngIf="exitoMensaje">
-    <span>✓</span> {{ exitoMensaje }}
+    <i class="fa-solid fa-circle-check"></i>
+    {{ exitoMensaje }}
   </div>
 
   <div class="alert-banner alert-error" *ngIf="errorMensaje">
-    <span>!</span> {{ errorMensaje }}
+    <i class="fa-solid fa-circle-exclamation"></i>
+    {{ errorMensaje }}
   </div>
 
   <div class="loading-state" *ngIf="cargando">
@@ -59,35 +74,30 @@
     <p>Cargando calendario de citas...</p>
   </div>
 
-  <!-- ============================================== -->
-  <!-- VISTA 1: MES                                   -->
-  <!-- ============================================== -->
+  <!-- VISTA 1: MES -->
   <div class="calendar-card" *ngIf="!cargando && vista === 'mes'">
     <div class="month-weekdays-header">
-      <div class="weekday-col" *ngFor="let dia of diasNombres">{{ dia }}</div>
+      <div class="weekday-col" *ngFor="let dia of diasNombres">
+        {{ dia }}
+      </div>
     </div>
 
     <div class="month-grid">
-      <div
-        class="month-day-cell"
-        *ngFor="let dia of diasDelMes"
-        [class.other-month]="!dia.esMesActual"
-        [class.today-cell]="dia.esHoy"
-        (click)="abrirModalNuevo(dia.fecha)"
-      >
+      <div class="month-day-cell" *ngFor="let dia of diasDelMes" [class.other-month]="!dia.esMesActual"
+        [class.today-cell]="dia.esHoy" (click)="abrirModalNuevo(dia.fecha)">
         <div class="day-number-wrapper">
-          <span class="day-number" [class.badge-today]="dia.esHoy">{{ dia.numero }}</span>
-          <span class="count-pill" *ngIf="dia.citas.length > 0">{{ dia.citas.length }}</span>
+          <span class="day-number" [class.badge-today]="dia.esHoy">
+            {{ dia.numero }}
+          </span>
+          <span class="count-pill" *ngIf="dia.citas.length > 0">
+            {{ dia.citas.length }}
+          </span>
         </div>
 
         <div class="day-events-list">
-          <div
-            class="event-pill"
-            *ngFor="let cita of dia.citas | slice: 0: 3"
-            [ngClass]="obtenerClaseEstado(cita.estado)"
-            (click)="abrirDetalle(cita, $event)"
-            [title]="cita.pacienteNombre + ' - ' + cita.servicioNombre"
-          >
+          <div class="event-pill" *ngFor="let cita of dia.citas | slice: 0: 3"
+            [ngClass]="obtenerClaseEstado(cita.estado)" (click)="abrirDetalle(cita, $event)"
+            [title]="cita.pacienteNombre + ' - ' + cita.servicioNombre">
             <span class="event-time">{{ formatearHora(cita.fechaHora) }}</span>
             <span class="event-title">{{ cita.pacienteNombre }}</span>
           </div>
@@ -100,276 +110,314 @@
     </div>
   </div>
 
-  <!-- ============================================== -->
-  <!-- VISTA 2: SEMANA                                -->
-  <!-- ============================================== -->
+  <!-- VISTA 2: SEMANA -->
   <div class="calendar-card week-view-card" *ngIf="!cargando && vista === 'semana'">
     <div class="week-header">
       <div class="time-header-corner">GMT-5</div>
-      <div
-        class="week-day-header"
-        *ngFor="let d of diasDeLaSemana"
-        [class.today-header]="d.esHoy"
-      >
+
+      <div class="week-day-header" *ngFor="let d of diasDeLaSemana" [class.today-header]="d.esHoy">
         <span class="week-day-name">{{ d.nombre }}</span>
-        <span class="week-day-num" [class.badge-today]="d.esHoy">{{ d.numero }}</span>
+        <span class="week-day-num" [class.badge-today]="d.esHoy">
+          {{ d.numero }}
+        </span>
       </div>
     </div>
 
     <div class="week-body-scroll">
       <div class="week-hour-row" *ngFor="let hora of horasDelDia">
         <div class="hour-label-col">
-          {{ hora < 10 ? '0' + hora : hora }}:00
-        </div>
-        <div
-          class="hour-slot-cell"
-          *ngFor="let d of diasDeLaSemana"
-          (click)="abrirModalNuevo(d.fecha, hora)"
-        >
-          <div
-            class="week-event-card"
-            *ngFor="let cita of obtenerCitasDeFechaYHora(d.fecha, hora)"
-            [ngClass]="obtenerClaseEstado(cita.estado)"
-            (click)="abrirDetalle(cita, $event)"
-          >
-            <div class="week-event-time">{{ formatearHora(cita.fechaHora) }}</div>
-            <div class="week-event-name">{{ cita.pacienteNombre }}</div>
-            <div class="week-event-service">{{ cita.servicioNombre }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+          {{ hora < 10 ? '0' + hora : hora }}:00 </div>
 
-  <!-- ============================================== -->
-  <!-- VISTA 3: AGENDA / LISTADO                      -->
-  <!-- ============================================== -->
-  <div class="calendar-card agenda-card" *ngIf="!cargando && vista === 'agenda'">
-    <div class="agenda-empty" *ngIf="citasFiltradas.length === 0">
-      <div class="empty-icon">📅</div>
-      <h3>No hay citas programadas</h3>
-      <p>No se encontraron citas para los filtros seleccionados.</p>
-      <button type="button" class="btn-nueva-cita" (click)="abrirModalNuevo()">Programar Primera Cita</button>
-    </div>
-
-    <div class="agenda-table-wrapper" *ngIf="citasFiltradas.length > 0">
-      <table class="agenda-table">
-        <thead>
-          <tr>
-            <th>Fecha y Hora</th>
-            <th>Paciente</th>
-            <th>Veterinario</th>
-            <th>Servicio</th>
-            <th>Motivo</th>
-            <th>Estado</th>
-            <th class="text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let cita of citasFiltradas">
-            <td class="cell-date">
-              <strong>{{ formatearHora(cita.fechaHora) }}</strong>
-              <small>{{ cita.fechaHora | slice: 0: 10 }}</small>
-            </td>
-            <td>
-              <div class="patient-cell">
-                <span class="patient-icon">🐾</span>
-                <strong>{{ cita.pacienteNombre }}</strong>
+            <div class="hour-slot-cell" *ngFor="let d of diasDeLaSemana" (click)="abrirModalNuevo(d.fecha, hora)">
+              <div class="week-event-card" *ngFor="let cita of obtenerCitasDeFechaYHora(d.fecha, hora)"
+                [ngClass]="obtenerClaseEstado(cita.estado)" (click)="abrirDetalle(cita, $event)">
+                <div class="week-event-time">{{ formatearHora(cita.fechaHora) }}</div>
+                <div class="week-event-name">{{ cita.pacienteNombre }}</div>
+                <div class="week-event-service">{{ cita.servicioNombre }}</div>
               </div>
-            </td>
-            <td>Dr. {{ cita.veterinarioNombre }}</td>
-            <td>{{ cita.servicioNombre }}</td>
-            <td class="cell-motivo">{{ cita.motivo || 'Consulta general' }}</td>
-            <td>
-              <span class="badge-status" [ngClass]="obtenerClaseEstado(cita.estado)">
-                {{ cita.estado }}
-              </span>
-            </td>
-            <td class="text-right">
-              <button type="button" class="btn-action" (click)="abrirDetalle(cita)" title="Ver detalles">
-                Detalles
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ============================================== -->
-  <!-- MODAL: NUEVA CITA                              -->
-  <!-- ============================================== -->
-  <div class="modal-backdrop" *ngIf="modalNuevoAbierto" (click)="cerrarModalNuevo()">
-    <div class="modal-dialog" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <div>
-          <h3>Agendar Nueva Cita</h3>
-          <p>Completa la información para registrar la cita en el calendario.</p>
+            </div>
         </div>
-        <button type="button" class="btn-close" (click)="cerrarModalNuevo()">✕</button>
+      </div>
+    </div>
+
+    <!-- VISTA 3: AGENDA -->
+    <div class="calendar-card agenda-card" *ngIf="!cargando && vista === 'agenda'">
+      <div class="agenda-empty" *ngIf="citasFiltradas.length === 0">
+        <div class="empty-icon">
+          <i class="fa-regular fa-calendar-xmark"></i>
+        </div>
+        <h3>No hay citas programadas</h3>
+        <p>No se encontraron citas para los filtros seleccionados.</p>
+        <button type="button" class="btn-nueva-cita" (click)="abrirModalNuevo()">
+          <i class="fa-solid fa-plus"></i>
+          Programar Primera Cita
+        </button>
       </div>
 
-      <form [formGroup]="citaForm" (ngSubmit)="guardarCita()">
-        <div class="modal-body">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="idPaciente">Paciente (Mascota) *</label>
-              <select id="idPaciente" formControlName="idPaciente">
-                <option value="0" disabled>Selecciona un paciente</option>
-                <option *ngFor="let pac of pacientes" [value]="pac.idPaciente">
-                  {{ pac.nombre }} ({{ pac.especieNombre }} - Dueño: {{ pac.propietarioNombreCompleto }})
-                </option>
-              </select>
-              <small class="error-text" *ngIf="citaForm.controls.idPaciente.touched && citaForm.controls.idPaciente.invalid">
-                Debes seleccionar un paciente.
-              </small>
-            </div>
+      <div class="agenda-table-wrapper" *ngIf="citasFiltradas.length > 0">
+        <table class="agenda-table">
+          <thead>
+            <tr>
+              <th>Fecha y Hora</th>
+              <th>Paciente</th>
+              <th>Veterinario</th>
+              <th>Servicio</th>
+              <th>Motivo</th>
+              <th>Estado</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
 
-            <div class="form-group">
-              <label for="idVeterinario">Veterinario Responsable *</label>
-              <select id="idVeterinario" formControlName="idVeterinario">
-                <option value="0" disabled>Selecciona veterinario</option>
-                <option *ngFor="let vet of veterinarios" [value]="vet.idUsuario">
-                  Dr. {{ vet.nombre }} {{ vet.apellido }}
-                </option>
-              </select>
-              <small class="error-text" *ngIf="citaForm.controls.idVeterinario.touched && citaForm.controls.idVeterinario.invalid">
-                Debes seleccionar un veterinario.
-              </small>
-            </div>
+          <tbody>
+            <tr *ngFor="let cita of citasFiltradas">
+              <td class="cell-date">
+                <strong>{{ formatearHora(cita.fechaHora) }}</strong>
+                <small>{{ cita.fechaHora | slice: 0: 10 }}</small>
+              </td>
+
+              <td>
+                <div class="patient-cell">
+                  <span class="patient-icon">
+                    <i class="fa-solid fa-paw"></i>
+                  </span>
+                  <strong>{{ cita.pacienteNombre }}</strong>
+                </div>
+              </td>
+
+              <td>Dr. {{ cita.veterinarioNombre }}</td>
+              <td>{{ cita.servicioNombre }}</td>
+              <td class="cell-motivo">{{ cita.motivo || 'Consulta general' }}</td>
+
+              <td>
+                <span class="badge-status" [ngClass]="obtenerClaseEstado(cita.estado)">
+                  {{ cita.estado }}
+                </span>
+              </td>
+
+              <td class="text-right">
+                <button type="button" class="btn-action" (click)="abrirDetalle(cita)" title="Ver detalles">
+                  <i class="fa-solid fa-eye"></i>
+                  Detalles
+                </button>
+
+                <button type="button" class="btn-action btn-editar" (click)="editarCita(cita)" title="Editar cita">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                  Editar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MODAL: NUEVA CITA -->
+    <div class="modal-backdrop" *ngIf="modalNuevoAbierto" (click)="cerrarModalNuevo()">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <h3>Agendar Nueva Cita</h3>
+            <p>Completa la información para registrar la cita en el calendario.</p>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="idServicio">Servicio Veterinario *</label>
-              <select id="idServicio" formControlName="idServicio">
-                <option value="0" disabled>Selecciona un servicio</option>
-                <option *ngFor="let srv of servicios" [value]="srv.idServicio">
-                  {{ srv.nombre }} - S/. {{ srv.precio | number: '1.2-2' }} ({{ srv.duracionEstimadaMin }} min)
-                </option>
-              </select>
-              <small class="error-text" *ngIf="citaForm.controls.idServicio.touched && citaForm.controls.idServicio.invalid">
-                Debes seleccionar un servicio.
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label for="fechaHora">Fecha y Hora de Atención *</label>
-              <input id="fechaHora" type="datetime-local" formControlName="fechaHora" />
-              <small class="error-text" *ngIf="citaForm.controls.fechaHora.touched && citaForm.controls.fechaHora.invalid">
-                La fecha y hora son requeridas.
-              </small>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="motivo">Motivo de la Cita</label>
-            <input id="motivo" type="text" formControlName="motivo" placeholder="Ej: Control de vacunas, chequeo dental, tos frecuente..." />
-          </div>
-
-          <div class="form-group">
-            <label for="notasAgendamiento">Notas de Agendamiento</label>
-            <textarea id="notasAgendamiento" rows="3" formControlName="notasAgendamiento" placeholder="Observaciones previas, alergias, requerimientos especiales..."></textarea>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary" (click)="cerrarModalNuevo()" [disabled]="guardando">Cancelar</button>
-          <button type="submit" class="btn-primary" [disabled]="guardando">
-            <span *ngIf="!guardando">Confirmar y Agendar</span>
-            <span *ngIf="guardando">Guardando...</span>
+          <button type="button" class="btn-close" (click)="cerrarModalNuevo()" aria-label="Cerrar modal">
+            <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
-      </form>
+
+        <form [formGroup]="citaForm" (ngSubmit)="guardarCita()">
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="idPaciente">Paciente (Mascota) *</label>
+                <select id="idPaciente" formControlName="idPaciente">
+                  <option value="0" disabled>Selecciona un paciente</option>
+                  <option *ngFor="let pac of pacientes" [value]="pac.idPaciente">
+                    {{ pac.nombre }} ({{ pac.especieNombre }} - Dueño: {{ pac.propietarioNombreCompleto }})
+                  </option>
+                </select>
+
+                <small class="error-text"
+                  *ngIf="citaForm.controls.idPaciente.touched && citaForm.controls.idPaciente.invalid">
+                  Debes seleccionar un paciente.
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label for="idVeterinario">Veterinario Responsable *</label>
+                <select id="idVeterinario" formControlName="idVeterinario">
+                  <option value="0" disabled>Selecciona veterinario</option>
+                  <option *ngFor="let vet of veterinarios" [value]="vet.idUsuario">
+                    Dr. {{ vet.nombre }} {{ vet.apellido }}
+                  </option>
+                </select>
+
+                <small class="error-text"
+                  *ngIf="citaForm.controls.idVeterinario.touched && citaForm.controls.idVeterinario.invalid">
+                  Debes seleccionar un veterinario.
+                </small>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="idServicio">Servicio Veterinario *</label>
+                <select id="idServicio" formControlName="idServicio">
+                  <option value="0" disabled>Selecciona un servicio</option>
+                  <option *ngFor="let srv of servicios" [value]="srv.idServicio">
+                    {{ srv.nombre }} - S/. {{ srv.precio | number: '1.2-2' }} ({{ srv.duracionEstimadaMin }} min)
+                  </option>
+                </select>
+
+                <small class="error-text"
+                  *ngIf="citaForm.controls.idServicio.touched && citaForm.controls.idServicio.invalid">
+                  Debes seleccionar un servicio.
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label for="fechaHora">Fecha y Hora de Atención *</label>
+                <input id="fechaHora" type="datetime-local" formControlName="fechaHora" />
+
+                <small class="error-text"
+                  *ngIf="citaForm.controls.fechaHora.touched && citaForm.controls.fechaHora.invalid">
+                  La fecha y hora son requeridas.
+                </small>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="motivo">Motivo de la Cita</label>
+              <input id="motivo" type="text" formControlName="motivo"
+                placeholder="Ej: Control de vacunas, chequeo dental, tos frecuente..." />
+            </div>
+
+            <div class="form-group">
+              <label for="notasAgendamiento">Notas de Agendamiento</label>
+              <textarea id="notasAgendamiento" rows="3" formControlName="notasAgendamiento"
+                placeholder="Observaciones previas, alergias, requerimientos especiales..."></textarea>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" (click)="cerrarModalNuevo()" [disabled]="guardando">
+              <i class="fa-solid fa-xmark"></i>
+              Cancelar
+            </button>
+
+            <button type="submit" class="btn-primary" [disabled]="guardando">
+              <i class="fa-solid fa-floppy-disk" *ngIf="!guardando"></i>
+              <i class="fa-solid fa-spinner fa-spin" *ngIf="guardando"></i>
+              <span *ngIf="!guardando">Confirmar y Agendar</span>
+              <span *ngIf="guardando">Guardando...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: DETALLES DE CITA -->
+    <div class="modal-backdrop" *ngIf="modalDetalleAbierto && citaSeleccionada" (click)="cerrarDetalle()">
+      <div class="modal-dialog modal-detalle" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="header-status-pill">
+            <span class="badge-status" [ngClass]="obtenerClaseEstado(citaSeleccionada.estado)">
+              {{ citaSeleccionada.estado }}
+            </span>
+            <span class="cita-id">Cita #{{ citaSeleccionada.idCita }}</span>
+          </div>
+
+          <button type="button" class="btn-close" (click)="cerrarDetalle()" aria-label="Cerrar detalles">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="modal-body detalle-body">
+          <div class="detalle-main-info">
+            <div class="detalle-avatar">
+              <i class="fa-solid fa-paw"></i>
+            </div>
+
+            <div>
+              <h3>{{ citaSeleccionada.pacienteNombre }}</h3>
+              <p class="detalle-sub">{{ citaSeleccionada.servicioNombre }}</p>
+            </div>
+          </div>
+
+          <div class="detalle-grid">
+            <div class="detalle-item">
+              <span class="detalle-label">
+                <i class="fa-regular fa-calendar"></i>
+                Fecha y Hora
+              </span>
+              <strong>{{ formatearFechaCompleta(citaSeleccionada.fechaHora) }}</strong>
+            </div>
+
+            <div class="detalle-item">
+              <span class="detalle-label">
+                <i class="fa-solid fa-user-doctor"></i>
+                Veterinario
+              </span>
+              <strong>Dr. {{ citaSeleccionada.veterinarioNombre }}</strong>
+            </div>
+
+            <div class="detalle-item full-width">
+              <span class="detalle-label">
+                <i class="fa-solid fa-notes-medical"></i>
+                Motivo
+              </span>
+              <p>{{ citaSeleccionada.motivo || 'Consulta de rutina' }}</p>
+            </div>
+          </div>
+
+          <!-- CAMBIO DE ESTADO -->
+          <div class="cambio-estado-section">
+            <h4>Cambiar Estado de la Cita:</h4>
+
+            <div class="estado-buttons">
+              <button type="button" class="btn-estado btn-est-confirmada"
+                [disabled]="guardando || estaEstadoBloqueado(citaSeleccionada.estado, 'Confirmada')"
+                (click)="cambiarEstado(citaSeleccionada, 'Confirmada')">
+                <i class="fa-solid fa-circle-check"></i>
+                Confirmar
+              </button>
+
+              <button type="button" class="btn-estado btn-est-atencion"
+                [disabled]="guardando || estaEstadoBloqueado(citaSeleccionada.estado, 'EnAtencion')"
+                (click)="cambiarEstado(citaSeleccionada, 'EnAtencion')">
+                <i class="fa-solid fa-stethoscope"></i>
+                En Atención
+              </button>
+
+              <button type="button" class="btn-estado btn-est-completada"
+                [disabled]="guardando || estaEstadoBloqueado(citaSeleccionada.estado, 'Completada')"
+                (click)="cambiarEstado(citaSeleccionada, 'Completada')">
+                <i class="fa-solid fa-clipboard-check"></i>
+                Completada
+              </button>
+
+              <button type="button" class="btn-estado btn-est-cancelada"
+                [disabled]="guardando || estaEstadoBloqueado(citaSeleccionada.estado, 'Cancelada')"
+                (click)="cambiarEstado(citaSeleccionada, 'Cancelada')">
+                <i class="fa-solid fa-ban"></i>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer footer-detalle">
+          <button type="button" class="btn-danger-outline" (click)="eliminarCita(citaSeleccionada)"
+            [disabled]="guardando">
+            <i class="fa-solid fa-trash-can"></i>
+            Eliminar Cita
+          </button>
+
+          <button type="button" class="btn-primary" (click)="cerrarDetalle()">
+            <i class="fa-solid fa-xmark"></i>
+            Cerrar
+          </button>
+        </div>
+      </div>
     </div>
   </div>
-
-  <!-- ============================================== -->
-  <!-- MODAL: DETALLES DE CITA                        -->
-  <!-- ============================================== -->
-  <div class="modal-backdrop" *ngIf="modalDetalleAbierto && citaSeleccionada" (click)="cerrarDetalle()">
-    <div class="modal-dialog modal-detalle" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <div class="header-status-pill">
-          <span class="badge-status" [ngClass]="obtenerClaseEstado(citaSeleccionada.estado)">
-            {{ citaSeleccionada.estado }}
-          </span>
-          <span class="cita-id">Cita #{{ citaSeleccionada.idCita }}</span>
-        </div>
-        <button type="button" class="btn-close" (click)="cerrarDetalle()">✕</button>
-      </div>
-
-      <div class="modal-body detalle-body">
-        <div class="detalle-main-info">
-          <div class="detalle-avatar">🐾</div>
-          <div>
-            <h3>{{ citaSeleccionada.pacienteNombre }}</h3>
-            <p class="detalle-sub">{{ citaSeleccionada.servicioNombre }}</p>
-          </div>
-        </div>
-
-        <div class="detalle-grid">
-          <div class="detalle-item">
-            <span class="detalle-label">Fecha y Hora</span>
-            <strong>{{ formatearFechaCompleta(citaSeleccionada.fechaHora) }}</strong>
-          </div>
-
-          <div class="detalle-item">
-            <span class="detalle-label">Veterinario</span>
-            <strong>Dr. {{ citaSeleccionada.veterinarioNombre }}</strong>
-          </div>
-
-          <div class="detalle-item full-width">
-            <span class="detalle-label">Motivo</span>
-            <p>{{ citaSeleccionada.motivo || 'Consulta de rutina' }}</p>
-          </div>
-        </div>
-
-        <div class="cambio-estado-section">
-          <h4>Cambiar Estado de la Cita:</h4>
-          <div class="estado-buttons">
-            <button
-              type="button"
-              class="btn-estado btn-est-confirmada"
-              [disabled]="guardando || citaSeleccionada.estado === 'Confirmada'"
-              (click)="cambiarEstado(citaSeleccionada, 'Confirmada')"
-            >
-              ✓ Confirmar
-            </button>
-            <button
-              type="button"
-              class="btn-estado btn-est-atencion"
-              [disabled]="guardando || citaSeleccionada.estado === 'EnAtencion'"
-              (click)="cambiarEstado(citaSeleccionada, 'EnAtencion')"
-            >
-              ▶ En Atención
-            </button>
-            <button
-              type="button"
-              class="btn-estado btn-est-completada"
-              [disabled]="guardando || citaSeleccionada.estado === 'Completada'"
-              (click)="cambiarEstado(citaSeleccionada, 'Completada')"
-            >
-              ★ Completada
-            </button>
-            <button
-              type="button"
-              class="btn-estado btn-est-cancelada"
-              [disabled]="guardando || citaSeleccionada.estado === 'Cancelada'"
-              (click)="cambiarEstado(citaSeleccionada, 'Cancelada')"
-            >
-              ✕ Cancelar
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer footer-detalle">
-        <button type="button" class="btn-danger-outline" (click)="eliminarCita(citaSeleccionada)" [disabled]="guardando">
-          Eliminar Cita
-        </button>
-        <button type="button" class="btn-primary" (click)="cerrarDetalle()">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</div>

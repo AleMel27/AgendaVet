@@ -1088,3 +1088,14 @@
     padding: 8px 2px;
   }
 }
+
+.btn-editar {
+  margin-left: 6px;
+  background-color: #e8f0fe;
+  color: #2457a7;
+  border: 1px solid #c7d8fa;
+}
+
+.btn-editar:hover {
+  background-color: #d5e4fc;
+}

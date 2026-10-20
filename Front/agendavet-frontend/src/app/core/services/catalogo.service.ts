@@ -34,10 +34,15 @@ export class CatalogoService {
   obtenerVeterinarios(): Observable<Veterinario[]> {
     return this.http.get<Veterinario[]>(`${this.apiUrl}/Usuario/todos`).pipe(
       map(usuarios =>
-        usuarios.filter(
-          u => u.activo && (u.idRol === 2 || u.idRol === 1 || u.rolNombre?.toLowerCase().includes('veterinario'))
+        usuarios.filter(u =>
+          u.activo &&
+          (
+            u.idRol === 2 ||
+            u.rolNombre?.trim().toLowerCase() === 'veterinario'
+          )
         )
       )
     );
   }
+
 }

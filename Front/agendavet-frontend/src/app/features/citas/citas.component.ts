@@ -49,6 +49,7 @@ export class CitasComponent implements OnInit {
 
   filtroVeterinario: number | null = null;
   filtroEstado: string = '';
+  citaEditando: number | null = null;
 
   cargando = true;
   guardando = false;
@@ -356,6 +357,19 @@ export class CitasComponent implements OnInit {
     });
   }
 
+  editarCita(cita: Cita): void {
+    this.citaEditando = cita.idCita;
+
+    this.citaForm.patchValue({
+      idPaciente: cita.idPaciente,
+      idVeterinario: cita.idVeterinario,
+      idServicio: cita.idServicio,
+      fechaHora: cita.fechaHora,
+      motivo: cita.motivo ?? '',
+      notasAgendamiento: ''
+    });
+  }
+
   cambiarEstado(cita: Cita, nuevoEstado: string): void {
     if (this.guardando) return;
     this.guardando = true;
@@ -374,6 +388,28 @@ export class CitasComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  estaEstadoBloqueado(estadoActual: string, estadoBoton: string): boolean {
+    const estado = estadoActual?.replace(/\s/g, '').toLowerCase();
+
+    if (estado === 'completada' || estado === 'cancelada') {
+      return true;
+    }
+
+    if (estado === 'enatencion') {
+      return estadoBoton !== 'Completada';
+    }
+
+    if (estado === 'confirmada') {
+      return estadoBoton === 'Confirmada';
+    }
+
+    if (estado === 'pendiente') {
+      return false;
+    }
+
+    return true;
   }
 
   eliminarCita(cita: Cita): void {
