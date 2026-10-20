@@ -539,6 +539,61 @@
   text-overflow: ellipsis;
 }
 
+.day-view-card {
+  width: min(100%, 900px);
+  margin: 0 auto;
+}
+
+.day-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  background: #fbfcfe;
+  border-bottom: 1px solid #e7edf5;
+  color: #798da6;
+  text-transform: capitalize;
+}
+
+.day-view-header strong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #2c425e;
+}
+
+.day-view-header.today-header strong {
+  background: #477fd0;
+  color: #fff;
+}
+
+.day-hour-row {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  min-height: 64px;
+  border-bottom: 1px solid #edf1f7;
+}
+
+.day-hour-slot {
+  padding: 5px 8px;
+  border-left: 1px solid #edf1f7;
+  cursor: pointer;
+}
+
+.day-hour-slot:hover {
+  background: #f8fbff;
+}
+
+.day-no-events {
+  padding: 18px;
+  color: #64748b;
+  text-align: center;
+}
+
 /* ====================================================
    VISTA 3: AGENDA / TABLA
    ==================================================== */

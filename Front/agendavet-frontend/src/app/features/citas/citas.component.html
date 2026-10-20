@@ -50,6 +50,10 @@
           <i class="fa-solid fa-calendar-week"></i>
           Semana
         </button>
+        <button type="button" [class.active]="vista === 'dia'" (click)="cambiarVista('dia')">
+          <i class="fa-regular fa-calendar"></i>
+          Día
+        </button>
         <button type="button" [class.active]="vista === 'agenda'" (click)="cambiarVista('agenda')">
           <i class="fa-solid fa-list"></i>
           Agenda
@@ -140,7 +144,32 @@
       </div>
     </div>
 
-    <!-- VISTA 3: AGENDA -->
+  <!-- VISTA 3: DÍA -->
+  <div class="calendar-card week-view-card day-view-card" *ngIf="!cargando && vista === 'dia'">
+    <div class="day-view-header" [class.today-header]="esHoy(fechaActual)">
+      <span>{{ fechaActual | date: 'EEEE' }}</span>
+      <strong>{{ fechaActual | date: 'd' }}</strong>
+    </div>
+
+    <div class="week-body-scroll">
+      <div class="day-hour-row" *ngFor="let hora of horasDelDia">
+        <div class="hour-label-col">{{ hora < 10 ? '0' + hora : hora }}:00</div>
+        <div class="day-hour-slot" (click)="abrirModalNuevo(fechaActual, hora)">
+          <div class="week-event-card" *ngFor="let cita of obtenerCitasDeFechaYHora(fechaActual, hora)"
+            [ngClass]="obtenerClaseEstado(cita.estado)" (click)="abrirDetalle(cita, $event)">
+            <div class="week-event-time">{{ formatearHora(cita.fechaHora) }}</div>
+            <div class="week-event-name">{{ cita.pacienteNombre }}</div>
+            <div class="week-event-service">{{ cita.servicioNombre }} · Dr. {{ cita.veterinarioNombre }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="day-no-events" *ngIf="citasDelDia.length === 0">
+        No hay citas para este día. Selecciona un horario para agendar una.
+      </div>
+    </div>
+  </div>
+
+    <!-- VISTA 4: AGENDA -->
     <div class="calendar-card agenda-card" *ngIf="!cargando && vista === 'agenda'">
       <div class="agenda-empty" *ngIf="citasFiltradas.length === 0">
         <div class="empty-icon">
@@ -172,7 +201,7 @@
             <tr *ngFor="let cita of citasPaginadas">
               <td class="cell-date">
                 <strong>{{ formatearHora(cita.fechaHora) }}</strong>
-                <small>{{ cita.fechaHora | slice: 0: 10 }}</small>
+                <small>{{ cita.fechaHora | date: 'dd/MM/yyyy' }}</small>
               </td>
 
               <td>
@@ -237,6 +266,10 @@
 
         <form [formGroup]="citaForm" (ngSubmit)="guardarCita()">
           <div class="modal-body">
+            <div class="alert-banner alert-error" *ngIf="errorCitaMensaje" role="alert">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              {{ errorCitaMensaje }}
+            </div>
             <div class="form-row">
               <div class="form-group">
                 <label for="idPaciente">Paciente (Mascota) *</label>

@@ -138,6 +138,26 @@ export class HistoriasClinicasComponent implements OnInit {
         return Math.min(this.paginaActual * this.registrosPorPagina, this.totalRegistros);
     }
 
+    calcularEdad(fechaNacimiento?: string | null): string {
+        if (!fechaNacimiento) return 'No registrada';
+
+        const [year, month, day] = fechaNacimiento.substring(0, 10).split('-').map(Number);
+        if (!year || !month || !day) return 'No registrada';
+
+        const hoy = new Date();
+        let mesesTotales = (hoy.getFullYear() - year) * 12 + hoy.getMonth() + 1 - month;
+        if (hoy.getDate() < day) mesesTotales--;
+
+        if (mesesTotales < 0) return 'No registrada';
+        if (mesesTotales === 0) return 'Menos de un mes';
+        const años = Math.floor(mesesTotales / 12);
+        const meses = mesesTotales % 12;
+        return [
+            años > 0 ? `${años} ${años === 1 ? 'año' : 'años'}` : '',
+            meses > 0 ? `${meses} ${meses === 1 ? 'mes' : 'meses'}` : ''
+        ].filter(Boolean).join(', ');
+    }
+
     abrirModal(): void {
         if (!this.pacienteSeleccionado) return;
         this.historiaForm.reset({

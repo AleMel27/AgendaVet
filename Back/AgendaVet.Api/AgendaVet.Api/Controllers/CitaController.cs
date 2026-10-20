@@ -1,4 +1,5 @@
 ﻿using AgendaVet.Api.DTOs.Request;
+using AgendaVet.Api.Exceptions;
 using AgendaVet.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -42,16 +43,30 @@ namespace AgendaVet.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Crear([FromBody] CitaReqDto dto)
         {
-            var creada = await _citaService.CrearAsync(dto);
-            return CreatedAtAction(nameof(ObtenerPorId), new { id = creada.IdCita }, creada);
+            try
+            {
+                var creada = await _citaService.CrearAsync(dto);
+                return CreatedAtAction(nameof(ObtenerPorId), new { id = creada.IdCita }, creada);
+            }
+            catch (BusinessException ex)
+            {
+                return Conflict(new { mensaje = ex.Message });
+            }
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Actualizar(int id, [FromBody] CitaUpdateReqDto dto)
         {
-            var actualizada = await _citaService.ActualizarAsync(id, dto);
-            if (actualizada == null) return NotFound(new { mensaje = "Cita no encontrada para actualizar." });
-            return Ok(actualizada);
+            try
+            {
+                var actualizada = await _citaService.ActualizarAsync(id, dto);
+                if (actualizada == null) return NotFound(new { mensaje = "Cita no encontrada para actualizar." });
+                return Ok(actualizada);
+            }
+            catch (BusinessException ex)
+            {
+                return Conflict(new { mensaje = ex.Message });
+            }
         }
 
         [HttpPatch("{id}/estado")]

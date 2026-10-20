@@ -40,7 +40,7 @@ export class CitasComponent implements OnInit {
   private catalogoService = inject(CatalogoService);
 
   fechaActual = new Date();
-  vista: 'mes' | 'semana' | 'agenda' = 'mes';
+  vista: 'mes' | 'semana' | 'dia' | 'agenda' = 'mes';
 
   citas: Cita[] = [];
   pacientes: Paciente[] = [];
@@ -56,6 +56,7 @@ export class CitasComponent implements OnInit {
   cargando = true;
   guardando = false;
   errorMensaje = '';
+  errorCitaMensaje = '';
   exitoMensaje = '';
 
   // Modales
@@ -120,6 +121,10 @@ export class CitasComponent implements OnInit {
       const nueva = new Date(this.fechaActual);
       nueva.setDate(nueva.getDate() - 7);
       this.fechaActual = nueva;
+    } else if (this.vista === 'dia') {
+      const nueva = new Date(this.fechaActual);
+      nueva.setDate(nueva.getDate() - 1);
+      this.fechaActual = nueva;
     } else {
       const nueva = new Date(this.fechaActual);
       nueva.setDate(nueva.getDate() - 15);
@@ -134,6 +139,10 @@ export class CitasComponent implements OnInit {
       const nueva = new Date(this.fechaActual);
       nueva.setDate(nueva.getDate() + 7);
       this.fechaActual = nueva;
+    } else if (this.vista === 'dia') {
+      const nueva = new Date(this.fechaActual);
+      nueva.setDate(nueva.getDate() + 1);
+      this.fechaActual = nueva;
     } else {
       const nueva = new Date(this.fechaActual);
       nueva.setDate(nueva.getDate() + 15);
@@ -141,7 +150,7 @@ export class CitasComponent implements OnInit {
     }
   }
 
-  cambiarVista(nuevaVista: 'mes' | 'semana' | 'agenda'): void {
+  cambiarVista(nuevaVista: 'mes' | 'semana' | 'dia' | 'agenda'): void {
     this.vista = nuevaVista;
   }
 
@@ -150,6 +159,14 @@ export class CitasComponent implements OnInit {
       'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
     ];
+    if (this.vista === 'dia') {
+      return this.fechaActual.toLocaleDateString('es-PE', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    }
     if (this.vista === 'mes' || this.vista === 'agenda') {
       return `${meses[this.fechaActual.getMonth()]} de ${this.fechaActual.getFullYear()}`;
     }
@@ -299,8 +316,17 @@ export class CitasComponent implements OnInit {
     });
   }
 
+  get citasDelDia(): Cita[] {
+    return this.obtenerCitasDeFecha(this.fechaActual);
+  }
+
+  esHoy(fecha: Date): boolean {
+    return fecha.toDateString() === new Date().toDateString();
+  }
+
   // Modales
   abrirModalNuevo(fechaPrevia?: Date, hora?: number): void {
+    this.errorCitaMensaje = '';
     const fecha = fechaPrevia ? new Date(fechaPrevia) : new Date();
     if (hora !== undefined) {
       fecha.setHours(hora, 0, 0, 0);
@@ -353,12 +379,35 @@ export class CitasComponent implements OnInit {
 
     this.guardando = true;
     const datos = this.citaForm.getRawValue();
+    this.errorCitaMensaje = '';
+    const fechaOriginal = new Date(datos.fechaHora);
+    const fechaCita = new Date(fechaOriginal);
+    const seReprogramaPorHorario = fechaCita.getHours() >= 20;
+
+    if (seReprogramaPorHorario) {
+      fechaCita.setDate(fechaCita.getDate() + 1);
+      fechaCita.setHours(8, 0, 0, 0);
+    }
+
+    const conflicto = this.obtenerConflictoCita(
+      Number(datos.idPaciente),
+      Number(datos.idVeterinario),
+      Number(datos.idServicio),
+      fechaCita
+    );
+
+    if (conflicto) {
+      this.guardando = false;
+      this.errorCitaMensaje = conflicto;
+      this.cdr.detectChanges();
+      return;
+    }
 
     this.citaService.crear({
       idPaciente: Number(datos.idPaciente),
       idVeterinario: Number(datos.idVeterinario),
       idServicio: Number(datos.idServicio),
-      fechaHora: new Date(datos.fechaHora).toISOString(),
+      fechaHora: fechaCita.toISOString(),
       motivo: datos.motivo || null,
       notasAgendamiento: datos.notasAgendamiento || null
     }).subscribe({
@@ -366,16 +415,45 @@ export class CitasComponent implements OnInit {
         this.guardando = false;
         this.citas.unshift(creada);
         this.cerrarModalNuevo();
-        this.mostrarMensajeTemporal('¡Cita programada con éxito!');
+        this.mostrarMensajeTemporal(seReprogramaPorHorario
+          ? 'La cita se programó para el día siguiente a las 8:00 a. m.'
+          : '¡Cita programada con éxito!');
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error al crear cita:', err);
         this.guardando = false;
-        alert('Ocurrió un error al agendar la cita. Verifica que todos los campos sean válidos.');
+        this.errorCitaMensaje = err.error?.mensaje
+          || err.error?.message
+          || 'Ocurrió un error al agendar la cita. Verifica que todos los campos sean válidos.';
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private obtenerConflictoCita(
+    idPaciente: number,
+    idVeterinario: number,
+    idServicio: number,
+    fechaHora: Date
+  ): string | null {
+    const duracionNueva = this.servicios.find(servicio => servicio.idServicio === idServicio)?.duracionEstimadaMin ?? 30;
+    const finNuevo = fechaHora.getTime() + duracionNueva * 60_000;
+    const conflicto = this.citas.find(cita => {
+      const estado = cita.estado.replace(/\s/g, '').toLowerCase();
+      if (estado === 'cancelada' || estado === 'completada') return false;
+      if (cita.idPaciente !== idPaciente && cita.idVeterinario !== idVeterinario) return false;
+
+      const inicioExistente = new Date(cita.fechaHora).getTime();
+      const duracionExistente = this.servicios.find(servicio => servicio.idServicio === cita.idServicio)?.duracionEstimadaMin ?? 30;
+      const finExistente = inicioExistente + duracionExistente * 60_000;
+      return inicioExistente < finNuevo && finExistente > fechaHora.getTime();
+    });
+
+    if (!conflicto) return null;
+    return conflicto.idVeterinario === idVeterinario
+      ? 'El veterinario ya tiene una cita en ese horario.'
+      : 'La mascota ya tiene una cita en ese horario.';
   }
 
   editarCita(cita: Cita): void {

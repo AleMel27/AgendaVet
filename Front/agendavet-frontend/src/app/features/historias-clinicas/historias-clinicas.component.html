@@ -63,16 +63,25 @@
                         style="background: #eaf2ff; color: #2f65ac; padding: 2px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">
                         {{ pacienteSeleccionado.sexo || 'Macho' }}
                     </span>
+                    <span class="patient-status" [class.patient-status-yes]="pacienteSeleccionado.esterilizado">
+                        {{ pacienteSeleccionado.esterilizado ? 'Esterilizado' : 'No esterilizado' }}
+                    </span>
                 </div>
             </div>
         </div>
 
         <div
-            style="border-top: 1px solid #f1f5f9; padding-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+            class="patient-info-grid">
             <div>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Propietario</p>
                 <p style="margin: 4px 0 0 0; font-weight: 600; color: #1e293b; font-size: 14px;">
                     {{ pacienteSeleccionado.propietarioNombreCompleto || 'N/A' }}
+                </p>
+            </div>
+            <div>
+                <p style="margin: 0; font-size: 12px; color: #64748b;">Edad</p>
+                <p style="margin: 4px 0 0 0; font-weight: 600; color: #1e293b; font-size: 14px;">
+                    {{ calcularEdad(pacienteSeleccionado.fechaNacimiento) }}
                 </p>
             </div>
             <div>
@@ -82,9 +91,21 @@
                 </p>
             </div>
             <div>
+                <p style="margin: 0; font-size: 12px; color: #64748b;">Raza</p>
+                <p style="margin: 4px 0 0 0; font-weight: 600; color: #1e293b; font-size: 14px;">
+                    {{ pacienteSeleccionado.razaNombre || 'Sin registrar' }}
+                </p>
+            </div>
+            <div>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Color</p>
                 <p style="margin: 4px 0 0 0; font-weight: 600; color: #059669; font-size: 14px;">
                     {{ pacienteSeleccionado.color || 'No especificado' }}
+                </p>
+            </div>
+            <div class="patient-observations" *ngIf="pacienteSeleccionado.observaciones">
+                <p style="margin: 0; font-size: 12px; color: #64748b;">Antecedentes y observaciones</p>
+                <p style="margin: 4px 0 0 0; font-weight: 500; color: #1e293b; font-size: 14px;">
+                    {{ pacienteSeleccionado.observaciones }}
                 </p>
             </div>
         </div>
@@ -101,30 +122,50 @@
             No hay atenciones médicas registradas para este paciente.
         </div>
 
-        <div *ngFor="let h of historias"
-            style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
-                <span style="font-weight: 700; color: #0f172a; font-size: 15px;">
-                    {{ h.fechaAtencion | date:'dd MMM yyyy, HH:mm' }} — Consulta Médica
-                </span>
-                <span
-                    style="background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Registrada</span>
+        <article *ngFor="let h of historias" class="history-record">
+            <div class="history-record-header">
+                <div>
+                    <strong>{{ h.fechaAtencion | date:'dd MMM yyyy, HH:mm' }}</strong>
+                    <span>Atención clínica</span>
+                </div>
+                <span class="history-record-status">Registrada</span>
             </div>
 
-            <div
-                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 14px; color: #334155; margin-bottom: 12px;">
-                <div><strong>Diagnóstico:</strong> {{ h.diagnostico }}</div>
-                <div><strong>Tratamiento:</strong> {{ h.tratamiento }}</div>
+            <div class="history-record-meta">
+                <span><i class="fa-solid fa-user-doctor" aria-hidden="true"></i>
+                    Veterinario: <strong>{{ h.veterinarioNombre || 'No registrado' }}</strong></span>
+                <span *ngIf="h.idCita"><i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
+                    Cita #{{ h.idCita }}</span>
+                <span *ngIf="h.idHistoria"><i class="fa-solid fa-file-medical" aria-hidden="true"></i>
+                    Historia #{{ h.idHistoria }}</span>
             </div>
 
-            <div
-                style="display: flex; gap: 16px; font-size: 13px; color: #64748b; background: #f8fafc; padding: 8px 12px; border-radius: 6px;">
-                <span>Peso: <strong>{{ h.pesoKg ?? '-' }} kg</strong></span>
-                <span>Temperatura: <strong>{{ h.temperatura }} °C</strong></span>
-                <span *ngIf="h.frecuenciaCardiaca">F.C.: <strong>{{ h.frecuenciaCardiaca }} lpm</strong></span>
+            <div class="history-diagnosis">
+                <span>Diagnóstico</span>
+                <p>{{ h.diagnostico || 'Sin diagnóstico registrado' }}</p>
             </div>
-        </div>
+
+            <div class="history-record-details">
+                <div>
+                    <span>Tratamiento</span>
+                    <p>{{ h.tratamiento || 'Sin tratamiento registrado' }}</p>
+                </div>
+                <div>
+                    <span>Observaciones</span>
+                    <p>{{ h.observaciones || 'Sin observaciones' }}</p>
+                </div>
+            </div>
+
+            <div class="history-vitals">
+                <span><i class="fa-solid fa-weight-scale" aria-hidden="true"></i>
+                    Peso: <strong>{{ h.pesoKg != null ? (h.pesoKg + ' kg') : 'Sin dato' }}</strong></span>
+                <span><i class="fa-solid fa-temperature-half" aria-hidden="true"></i>
+                    Temperatura: <strong>{{ h.temperatura != null ? (h.temperatura + ' °C') : 'Sin dato' }}</strong></span>
+                <span><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i>
+                    Frecuencia cardíaca:
+                    <strong>{{ h.frecuenciaCardiaca != null ? (h.frecuenciaCardiaca + ' lpm') : 'Sin dato' }}</strong></span>
+            </div>
+        </article>
         <div class="list-pagination" *ngIf="!cargando && totalRegistros > 0">
             <span>
                 Mostrando {{ (paginaActual - 1) * registrosPorPagina + 1 }} -

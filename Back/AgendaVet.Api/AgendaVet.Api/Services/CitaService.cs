@@ -92,12 +92,13 @@ namespace AgendaVet.Api.Services
                 IdPaciente = dto.IdPaciente,
                 IdVeterinario = dto.IdVeterinario,
                 IdServicio = dto.IdServicio,
-                FechaHora = dto.FechaHora,
+                FechaHora = AjustarFechaHora(dto.FechaHora),
                 Motivo = dto.Motivo,
                 Estado = "Pendiente",
                 FechaCreacion = DateTime.Now
             };
 
+            await ValidarDisponibilidadAsync(entidad);
             _context.Citas.Add(entidad);
             await _context.SaveChangesAsync();
 
@@ -111,12 +112,81 @@ namespace AgendaVet.Api.Services
 
             entidad.IdVeterinario = dto.IdVeterinario;
             entidad.IdServicio = dto.IdServicio;
-            entidad.FechaHora = dto.FechaHora;
+            entidad.FechaHora = AjustarFechaHora(dto.FechaHora);
             entidad.Motivo = dto.Motivo;
             entidad.Estado = dto.Estado;
 
+            await ValidarDisponibilidadAsync(entidad, id);
             await _context.SaveChangesAsync();
             return await ObtenerPorIdAsync(id);
+        }
+
+        private async Task ValidarDisponibilidadAsync(Cita cita, int? idCitaIgnorada = null)
+        {
+            var estado = cita.Estado.Replace(" ", string.Empty);
+            if (estado.Equals("Cancelada", StringComparison.OrdinalIgnoreCase)
+                || estado.Equals("Completada", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            var duracion = await _context.Servicios
+                .Where(servicio => servicio.IdServicio == cita.IdServicio)
+                .Select(servicio => (int?)servicio.DuracionEstimadaMin)
+                .FirstOrDefaultAsync();
+
+            if (!duracion.HasValue)
+            {
+                throw new BusinessException("El servicio seleccionado no existe.");
+            }
+
+            var finCita = cita.FechaHora.AddMinutes(duracion.Value);
+            var inicioBusqueda = cita.FechaHora.AddDays(-1);
+            var citasExistentes = await (
+                from existente in _context.Citas
+                join servicio in _context.Servicios on existente.IdServicio equals servicio.IdServicio
+                where (existente.IdVeterinario == cita.IdVeterinario || existente.IdPaciente == cita.IdPaciente)
+                    && existente.IdCita != idCitaIgnorada
+                    && existente.Estado != "Cancelada"
+                    && existente.Estado != "Completada"
+                    && existente.FechaHora >= inicioBusqueda
+                    && existente.FechaHora < finCita
+                select new
+                {
+                    existente.IdVeterinario,
+                    existente.IdPaciente,
+                    existente.FechaHora,
+                    servicio.DuracionEstimadaMin
+                }).ToListAsync();
+
+            var conflicto = citasExistentes.FirstOrDefault(existente =>
+                existente.FechaHora.AddMinutes(existente.DuracionEstimadaMin) > cita.FechaHora);
+
+            if (conflicto != null)
+            {
+                var motivo = conflicto.IdVeterinario == cita.IdVeterinario
+                    ? "el veterinario"
+                    : "la mascota";
+                throw new BusinessException($"El horario se cruza con otra cita de {motivo}. Selecciona otro horario.");
+            }
+        }
+
+        private static DateTime AjustarFechaHora(DateTime fechaHora)
+        {
+            var horarioPeru = TimeSpan.FromHours(-5);
+            var fechaLocal = fechaHora.Kind switch
+            {
+                DateTimeKind.Utc => new DateTimeOffset(fechaHora).ToOffset(horarioPeru).DateTime,
+                DateTimeKind.Local => new DateTimeOffset(fechaHora).ToOffset(horarioPeru).DateTime,
+                _ => DateTime.SpecifyKind(fechaHora, DateTimeKind.Unspecified)
+            };
+
+            if (fechaLocal.TimeOfDay >= TimeSpan.FromHours(20))
+            {
+                fechaLocal = fechaLocal.Date.AddDays(1).AddHours(8);
+            }
+
+            return new DateTimeOffset(fechaLocal, horarioPeru).UtcDateTime;
         }
 
 
@@ -159,7 +229,7 @@ namespace AgendaVet.Api.Services
             VeterinarioNombre = usu != null ? $"{usu.Nombre} {usu.Apellido}" : string.Empty,
             IdServicio = c.IdServicio,
             ServicioNombre = srv != null ? srv.Nombre : string.Empty,
-            FechaHora = c.FechaHora,
+            FechaHora = DateTime.SpecifyKind(c.FechaHora, DateTimeKind.Utc),
             Motivo = c.Motivo,
             Estado = c.Estado,
             FechaCreacion = c.FechaCreacion
