@@ -9,7 +9,7 @@
   </div>
 
   <div class="notice" *ngIf="errorMensaje">
-    <div class="notice-icon">!</div>
+    <div class="notice-icon"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i></div>
     <div>
       <strong>No se pudieron cargar los datos</strong>
       <p>{{ errorMensaje }}</p>
@@ -20,7 +20,7 @@
     <article class="stat-card">
       <div class="stat-heading">
         <span>Citas de hoy</span>
-        <span class="stat-icon blue">▣</span>
+        <span class="stat-icon blue"><i class="fa-solid fa-calendar-check" aria-hidden="true"></i></span>
       </div>
       <strong class="stat-value">{{ cargando ? '...' : estadisticas.citasHoy }}</strong>
       <span class="stat-description">Citas programadas para hoy</span>
@@ -29,7 +29,7 @@
     <article class="stat-card">
       <div class="stat-heading">
         <span>Pacientes registrados</span>
-        <span class="stat-icon purple">♡</span>
+        <span class="stat-icon purple"><i class="fa-solid fa-paw" aria-hidden="true"></i></span>
       </div>
       <strong class="stat-value">{{ cargando ? '...' : estadisticas.pacientes }}</strong>
       <span class="stat-description">Total de pacientes registrados</span>
@@ -38,7 +38,7 @@
     <article class="stat-card">
       <div class="stat-heading">
         <span>Propietarios</span>
-        <span class="stat-icon green">♙</span>
+        <span class="stat-icon green"><i class="fa-solid fa-user" aria-hidden="true"></i></span>
       </div>
       <strong class="stat-value">{{ cargando ? '...' : estadisticas.propietarios }}</strong>
       <span class="stat-description">Total de propietarios registrados</span>
@@ -47,7 +47,7 @@
     <article class="stat-card">
       <div class="stat-heading">
         <span>Servicios activos</span>
-        <span class="stat-icon orange">✚</span>
+        <span class="stat-icon orange"><i class="fa-solid fa-briefcase-medical" aria-hidden="true"></i></span>
       </div>
       <strong class="stat-value">{{ cargando ? '...' : estadisticas.servicios }}</strong>
       <span class="stat-description">Servicios activos en la clínica</span>
@@ -65,24 +65,24 @@
 
       <div class="quick-links">
         <a routerLink="/citas">
-          <span class="quick-icon blue">▣</span>
+          <span class="quick-icon blue"><i class="fa-solid fa-calendar-check" aria-hidden="true"></i></span>
           <span><strong>Gestionar citas</strong><small>Programación y seguimiento</small></span>
-          <span class="arrow">›</span>
+          <span class="arrow"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
         </a>
         <a routerLink="/pacientes">
-          <span class="quick-icon purple">♡</span>
+          <span class="quick-icon purple"><i class="fa-solid fa-paw" aria-hidden="true"></i></span>
           <span><strong>Ver pacientes</strong><small>Fichas de animales</small></span>
-          <span class="arrow">›</span>
+          <span class="arrow"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
         </a>
         <a routerLink="/propietarios">
-          <span class="quick-icon green">♙</span>
+          <span class="quick-icon green"><i class="fa-solid fa-user" aria-hidden="true"></i></span>
           <span><strong>Propietarios</strong><small>Datos de contacto</small></span>
-          <span class="arrow">›</span>
+          <span class="arrow"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
         </a>
         <a routerLink="/historias-clinicas">
-          <span class="quick-icon orange">▤</span>
+          <span class="quick-icon orange"><i class="fa-solid fa-file-medical" aria-hidden="true"></i></span>
           <span><strong>Historias clínicas</strong><small>Atenciones y diagnósticos</small></span>
-          <span class="arrow">›</span>
+          <span class="arrow"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
         </a>
       </div>
     </article>
@@ -125,7 +125,7 @@
       </div>
 
       <div class="appointments-empty" *ngIf="!cargando && citasHoy.length === 0">
-        <div class="empty-icon">✓</div>
+        <div class="empty-icon"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
         <h3>No hay citas para hoy</h3>
         <p>No tienes atenciones programadas para el día de hoy.</p>
         <a routerLink="/citas" class="empty-action">Programar una cita</a>

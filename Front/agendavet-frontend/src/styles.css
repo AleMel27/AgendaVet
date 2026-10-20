@@ -10,10 +10,100 @@
   --border-color: #e7edf5;
   --bg-light: #f5f8fc;
   --bg-card: #ffffff;
+  --accent-soft: #eaf2ff;
+  --accent-border: #cfe0f7;
   --danger: #d9534f;
   --danger-hover: #c9302c;
   --success: #1e8751;
   --warning: #e67e22;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  color: var(--text-dark);
+  background: var(--bg-light);
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg-light);
+  color: var(--text-dark);
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+button,
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:not([type="checkbox"]):not([type="radio"]):focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--accent-border);
+  outline-offset: 2px;
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  border-color: var(--border-color);
+  border-radius: 8px;
+  color: var(--text-dark);
+}
+
+.welcome-section h1,
+.header-titles h1,
+.title-main,
+.header-flex h1 {
+  color: var(--text-dark) !important;
+  font-size: 28px !important;
+  font-weight: 750 !important;
+  letter-spacing: -0.6px !important;
+}
+
+.subtitle,
+.sub-title {
+  color: var(--text-muted) !important;
+}
+
+.content-card,
+.card-table,
+.card-selector,
+.card-paciente,
+.stat-card,
+.calendar-card,
+.toolbar-card {
+  border-color: var(--border-color) !important;
+  border-radius: 12px !important;
+  background: var(--bg-card) !important;
+  box-shadow: 0 4px 14px rgb(37 58 85 / 4%) !important;
+}
+
+.content-card,
+.card-table,
+.card-selector,
+.card-paciente,
+.stat-card,
+.calendar-card,
+.toolbar-card,
+.page-header,
+.welcome-section,
+.header-flex {
+  color: var(--text-dark);
+}
+
+.data-table th,
+.tbl-propietarios th,
+.agenda-table th {
+  background: var(--bg-light) !important;
+  color: var(--text-muted) !important;
+  font-weight: 700;
 }
 
 /* BOTONES GLOBALES */
@@ -101,6 +191,13 @@
 .list-pagination-actions button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
+}
+
+.list-pagination-actions button:not(:disabled):hover,
+.btn-pager:not(:disabled):hover {
+  border-color: var(--primary-color);
+  background: var(--accent-soft);
+  color: var(--primary-hover);
 }
 
 /* NOTIFICACIÓN TOAST */

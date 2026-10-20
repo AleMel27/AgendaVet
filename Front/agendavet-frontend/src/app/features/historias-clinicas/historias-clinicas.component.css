@@ -1,7 +1,6 @@
 :host {
     display: block;
     width: 100%;
-    padding: 24px;
     box-sizing: border-box;
 }
 
@@ -28,14 +27,18 @@
 }
 
 .btn-add {
-    background-color: #f59e0b !important;
-    color: #0f172a !important;
+    background-color: #3976c6 !important;
+    color: #ffffff !important;
     font-weight: 600 !important;
     padding: 10px 18px !important;
     border-radius: 8px !important;
     border: none !important;
     cursor: pointer !important;
     white-space: nowrap;
+}
+
+.btn-add:hover {
+    background-color: #2f65ac !important;
 }
 
 .card-selector {

@@ -12,25 +12,25 @@
     <nav class="navigation">
       <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
         (click)="menuAbierto = false">
-        <span class="nav-icon">▦</span>
+        <span class="nav-icon"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i></span>
         <span>Dashboard</span>
       </a>
       <a routerLink="/citas" routerLinkActive="active" (click)="menuAbierto = false">
-        <span class="nav-icon">▣</span>
+        <span class="nav-icon"><i class="fa-solid fa-calendar-check" aria-hidden="true"></i></span>
         <span>Citas</span>
       </a>
       <a routerLink="/pacientes" routerLinkActive="active" (click)="menuAbierto = false">
-        <span class="nav-icon">♡</span>
+        <span class="nav-icon"><i class="fa-solid fa-paw" aria-hidden="true"></i></span>
         <span>Pacientes</span>
       </a>
       <a routerLink="/propietarios" routerLinkActive="active" (click)="menuAbierto = false">
-        <span class="nav-icon">♙</span>
+        <span class="nav-icon"><i class="fa-solid fa-user" aria-hidden="true"></i></span>
         <span>Propietarios</span>
       </a>
 
       <a *ngIf="puedeVerHistoriasClinicas" routerLink="/historias-clinicas" routerLinkActive="active"
         (click)="menuAbierto = false">
-        <span class="nav-icon">▤</span>
+        <span class="nav-icon"><i class="fa-solid fa-file-medical" aria-hidden="true"></i></span>
         <span>Historias clínicas</span>
       </a>
 
@@ -38,12 +38,12 @@
       <div class="menu-label secondary-label">GESTIÓN</div>
 
       <a routerLink="/servicios" routerLinkActive="active" (click)="menuAbierto = false">
-        <span class="nav-icon">✚</span>
+        <span class="nav-icon"><i class="fa-solid fa-briefcase-medical" aria-hidden="true"></i></span>
         <span>Servicios</span>
       </a>
 
       <a *ngIf="puedeVerUsuarios" routerLink="/usuarios" routerLinkActive="active" (click)="menuAbierto = false">
-        <span class="nav-icon">♧</span>
+        <span class="nav-icon"><i class="fa-solid fa-users" aria-hidden="true"></i></span>
         <span>Usuarios</span>
       </a>
     </nav>
