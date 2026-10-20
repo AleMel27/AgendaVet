@@ -36,7 +36,7 @@ namespace AgendaVet.Api.Services
             return await query.ToListAsync();
         }
 
-        public async Task<PaginatedRespDto> ObtenerPaginadoAsync(int pageNumber, int pageSize, string? buscar = null)
+        public async Task<PaginatedRespDto> ObtenerPaginadoAsync(int pageNumber, int pageSize, string? buscar = null, int? idRol = null)
         {
             var baseQuery = from u in _context.Usuarios
                             join r in _context.Roles on u.IdRol equals r.IdRol into rolGroup
@@ -48,6 +48,11 @@ namespace AgendaVet.Api.Services
                 baseQuery = baseQuery.Where(x => x.Usuario.Nombre.Contains(buscar) ||
                                                  x.Usuario.Apellido.Contains(buscar) ||
                                                  x.Usuario.Email.Contains(buscar));
+            }
+
+            if (idRol.HasValue)
+            {
+                baseQuery = baseQuery.Where(x => x.Usuario.IdRol == idRol.Value);
             }
 
             int totalRecords = await baseQuery.CountAsync();

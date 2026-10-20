@@ -18,9 +18,9 @@ namespace AgendaVet.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerPaginado([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? buscar = null)
+        public async Task<IActionResult> ObtenerPaginado([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? buscar = null, [FromQuery] int? idRol = null)
         {
-            var resultado = await _usuarioService.ObtenerPaginadoAsync(page, pageSize, buscar);
+            var resultado = await _usuarioService.ObtenerPaginadoAsync(page, pageSize, buscar, idRol);
             return Ok(resultado);
         }
 
