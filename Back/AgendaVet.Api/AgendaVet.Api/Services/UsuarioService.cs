@@ -140,6 +140,7 @@ namespace AgendaVet.Api.Services
             entidad.Nombre = dto.Nombre;
             entidad.Apellido = dto.Apellido;
             entidad.Telefono = dto.Telefono;
+            entidad.Activo = dto.Activo;
 
             await _context.SaveChangesAsync();
             return await ObtenerPorIdAsync(id);
