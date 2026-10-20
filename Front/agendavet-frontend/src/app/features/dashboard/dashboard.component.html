@@ -79,7 +79,7 @@
           <span><strong>Propietarios</strong><small>Datos de contacto</small></span>
           <span class="arrow"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
         </a>
-        <a routerLink="/historias-clinicas">
+        <a *ngIf="puedeVerHistoriasClinicas" routerLink="/historias-clinicas">
           <span class="quick-icon orange"><i class="fa-solid fa-file-medical" aria-hidden="true"></i></span>
           <span><strong>Historias clínicas</strong><small>Atenciones y diagnósticos</small></span>
           <span class="arrow"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>

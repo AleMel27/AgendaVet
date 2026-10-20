@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Cita } from '../../core/models/cita.model';
 
 @Component({
@@ -13,6 +14,7 @@ import { Cita } from '../../core/models/cita.model';
 })
 export class DashboardComponent implements OnInit {
   private dashboardService = inject(DashboardService);
+  private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
 
   estadisticas = {
@@ -28,6 +30,20 @@ export class DashboardComponent implements OnInit {
 
   cargando = true;
   errorMensaje = '';
+
+  get puedeVerHistoriasClinicas(): boolean {
+    const usuario = this.authService.obtenerUsuario();
+    const rol = (usuario?.rolNombre ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+
+    return Number(usuario?.idRol) === 1 ||
+      Number(usuario?.idRol) === 2 ||
+      rol === 'administrador' ||
+      rol === 'veterinario';
+  }
 
   ngOnInit(): void {
     this.dashboardService.obtenerEstadisticas().subscribe({
