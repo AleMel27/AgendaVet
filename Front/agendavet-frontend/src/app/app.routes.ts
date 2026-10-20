@@ -57,6 +57,20 @@ export const routes: Routes = [
         pathMatch: 'full'
       },
       {
+        path: 'propietarios',
+        loadComponent: () =>
+          import('./features/propietarios/propietarios.component').then(
+            m => m.PropietariosComponent
+          )
+      },
+      {
+        path: 'historias-clinicas',
+        loadComponent: () =>
+          import(
+            './features/historias-clinicas/historias-clinicas.component'
+          ).then(m => m.HistoriasClinicasComponent)
+      },
+      {
         path: '**',
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then(
@@ -70,4 +84,3 @@ export const routes: Routes = [
     redirectTo: 'login'
   }
 ];
-

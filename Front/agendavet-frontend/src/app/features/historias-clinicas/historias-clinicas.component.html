@@ -1,0 +1,202 @@
+<div>
+    <!-- Encabezado -->
+    <div class="header-flex">
+        <div>
+            <h1 class="title-main">Historias Clínicas</h1>
+            <p class="sub-title">Ficha médica digital y seguimiento de pacientes</p>
+        </div>
+        <button *ngIf="pacienteSeleccionado" (click)="abrirModal()" class="btn-add">
+            + Registrar Atención
+        </button>
+    </div>
+
+    <!-- Buscador y Selector de Pacientes -->
+    <div class="card-selector"
+        style="margin-bottom: 20px; padding: 20px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+        <label style="font-weight: 600; font-size: 14px; color: #475569; display: block; margin-bottom: 8px;">
+            Buscar y Seleccionar Paciente:
+        </label>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <!-- Campo de Búsqueda Rápida -->
+            <div style="flex: 1; min-width: 220px;">
+                <input type="text" [(ngModel)]="filtroBusqueda" (input)="filtrarPacientes()"
+                    placeholder="🔍 Buscar por mascota o dueño..."
+                    style="width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+            </div>
+
+            <!-- Selector desplegable filtrado -->
+            <div style="flex: 2; min-width: 280px;">
+                <select (change)="onSelectChange($event)"
+                    style="width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: white;">
+                    <option *ngFor="let p of pacientesFiltrados" [value]="p.idPaciente"
+                        [selected]="p.idPaciente === pacienteSeleccionado?.idPaciente">
+                        {{ p.nombre }} (Propietario: {{ p.propietarioNombreCompleto || 'N/A' }})
+                    </option>
+                    <option *ngIf="pacientesFiltrados.length === 0" disabled>No se encontraron mascotas con esa búsqueda
+                    </option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ficha del Paciente Seleccionado -->
+    <div *ngIf="pacienteSeleccionado" class="card-paciente"
+        style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
+            <!-- Icono de Huella / Mascotas -->
+            <div
+                style="width: 56px; height: 56px; background: #e0f2fe; color: #0284c7; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0;">
+                🐾
+            </div>
+
+            <div style="flex: 1;">
+                <h2 style="margin: 0 0 4px 0; font-size: 22px; color: #0f172a; font-weight: 700;">
+                    {{ pacienteSeleccionado.nombre }}
+                </h2>
+                <p style="margin: 0; color: #64748b; font-size: 14px;">
+                    Paciente #00{{ pacienteSeleccionado.idPaciente }} &bull; {{ pacienteSeleccionado.especieNombre ||
+                    'Mascota' }} &bull; {{ pacienteSeleccionado.razaNombre || 'Raza' }}
+                </p>
+                <div style="margin-top: 8px; display: flex; gap: 8px;">
+                    <span
+                        style="background: #e0f2fe; color: #0369a1; padding: 2px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                        {{ pacienteSeleccionado.sexo || 'Macho' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div
+            style="border-top: 1px solid #f1f5f9; padding-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+            <div>
+                <p style="margin: 0; font-size: 12px; color: #64748b;">Propietario</p>
+                <p style="margin: 4px 0 0 0; font-weight: 600; color: #1e293b; font-size: 14px;">
+                    {{ pacienteSeleccionado.propietarioNombreCompleto || 'N/A' }}
+                </p>
+            </div>
+            <div>
+                <p style="margin: 0; font-size: 12px; color: #64748b;">Especie</p>
+                <p style="margin: 4px 0 0 0; font-weight: 600; color: #1e293b; font-size: 14px;">
+                    {{ pacienteSeleccionado.especieNombre || 'Sin registrar' }}
+                </p>
+            </div>
+            <div>
+                <p style="margin: 0; font-size: 12px; color: #64748b;">Color</p>
+                <p style="margin: 4px 0 0 0; font-weight: 600; color: #059669; font-size: 14px;">
+                    {{ pacienteSeleccionado.color || 'No especificado' }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial de Atenciones -->
+    <div class="card-historial">
+        <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 16px;">Historial de Atenciones</h3>
+
+        <div *ngIf="cargando" style="text-align: center; padding: 24px; color: #64748b;">Cargando historial...</div>
+
+        <div *ngIf="!cargando && historias.length === 0"
+            style="text-align: center; padding: 32px; color: #64748b; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
+            No hay atenciones médicas registradas para este paciente.
+        </div>
+
+        <div *ngFor="let h of historias"
+            style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+                <span style="font-weight: 700; color: #0f172a; font-size: 15px;">
+                    {{ h.fechaAtencion | date:'dd MMM yyyy, HH:mm' }} — Consulta Médica
+                </span>
+                <span
+                    style="background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Registrada</span>
+            </div>
+
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 14px; color: #334155; margin-bottom: 12px;">
+                <div><strong>Diagnóstico:</strong> {{ h.diagnostico }}</div>
+                <div><strong>Tratamiento:</strong> {{ h.tratamiento }}</div>
+            </div>
+
+            <div
+                style="display: flex; gap: 16px; font-size: 13px; color: #64748b; background: #f8fafc; padding: 8px 12px; border-radius: 6px;">
+                <span>Peso: <strong>{{ h.pesoKg || h.peso || '-' }} kg</strong></span>
+                <span>Temperatura: <strong>{{ h.temperatura }} °C</strong></span>
+                <span *ngIf="h.frecuenciaCardiaca">F.C.: <strong>{{ h.frecuenciaCardiaca }} lpm</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL REGISTRO DE ATENCIÓN -->
+    <div *ngIf="modalAbierto"
+        style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px;">
+        <div
+            style="background: white; border-radius: 12px; width: 100%; max-width: 600px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); overflow: hidden;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #1e293b;">Registrar Nueva Atención
+                    Médica</h3>
+                <button (click)="cerrarModal()"
+                    style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b;">&times;</button>
+            </div>
+            <form [formGroup]="historiaForm" (ngSubmit)="guardarHistoria()" style="padding: 24px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <label
+                            style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px;">Peso
+                            (kg) *</label>
+                        <input type="number" formControlName="peso"
+                            style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px;">Temp
+                            (°C) *</label>
+                        <input type="number" step="0.1" formControlName="temperatura"
+                            style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px;">F.
+                            Cardíaca</label>
+                        <input type="number" formControlName="frecuenciaCardiaca"
+                            style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    </div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label
+                        style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Diagnóstico
+                        *</label>
+                    <textarea formControlName="diagnostico" rows="2" placeholder="Describa el diagnóstico clínico..."
+                        style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;"></textarea>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label
+                        style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Tratamiento
+                        *</label>
+                    <textarea formControlName="tratamiento" rows="2"
+                        placeholder="Indique el tratamiento y recomendaciones..."
+                        style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;"></textarea>
+                </div>
+                <div style="margin-bottom: 24px;">
+                    <label
+                        style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">Medicamentos
+                        / Receta</label>
+                    <input type="text" formControlName="medicamentos" placeholder="Ej. Amoxicilina 250mg c/12h"
+                        style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+                </div>
+                <div
+                    style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                    <button type="button" (click)="cerrarModal()"
+                        style="padding: 10px 16px; background: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; border-radius: 6px; font-weight: 500; cursor: pointer;">
+                        Cancelar
+                    </button>
+                    <button type="submit" [disabled]="guardando"
+                        style="padding: 10px 20px; background: #f59e0b; border: none; color: #0f172a; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        {{ guardando ? 'Guardando...' : 'Guardar Historia Clínica' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
