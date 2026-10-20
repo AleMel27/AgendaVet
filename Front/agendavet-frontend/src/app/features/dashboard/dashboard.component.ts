@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { Cita } from '../../core/models/cita.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,7 +22,9 @@ export class DashboardComponent implements OnInit {
     servicios: 0
   };
 
-  citasHoy: any[] = [];
+  citasHoy: Cita[] = [];
+  paginaCitasHoy = 1;
+  readonly citasPorPagina = 10;
 
   cargando = true;
   errorMensaje = '';
@@ -38,6 +41,7 @@ export class DashboardComponent implements OnInit {
         };
 
         this.citasHoy = datos.citasLista;
+        this.paginaCitasHoy = 1;
 
         this.cargando = false;
         this.cdr.detectChanges();
@@ -65,12 +69,27 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  get citasHoyPaginadas(): Cita[] {
+    const inicio = (this.paginaCitasHoy - 1) * this.citasPorPagina;
+    return this.citasHoy.slice(inicio, inicio + this.citasPorPagina);
+  }
+
+  get totalPaginasCitasHoy(): number {
+    return Math.max(1, Math.ceil(this.citasHoy.length / this.citasPorPagina));
+  }
+
+  cambiarPaginaCitasHoy(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.totalPaginasCitasHoy) {
+      this.paginaCitasHoy = pagina;
+    }
+  }
+
   obtenerClaseEstado(estado: string): string {
-    switch (estado?.toLowerCase()) {
+    switch (estado?.replace(/[\s_]/g, '').toLowerCase()) {
       case 'confirmada':
         return 'status-confirmada';
 
-      case 'en atención':
+      case 'enatencion':
         return 'status-atencion';
 
       case 'completada':

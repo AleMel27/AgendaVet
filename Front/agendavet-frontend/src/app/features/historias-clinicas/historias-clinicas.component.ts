@@ -1,10 +1,11 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
-import { HistoriaClinicaService } from '../../core/services/historia-clinica.service';
+import { HistoriaClinicaService, HistoriaClinica, HistoriaClinicaCreateRequest } from '../../core/services/historia-clinica.service';
 import { PacienteService } from '../../core/services/paciente.service';
-import { HistoriaClinica } from '../../core/models/historia-clinica.model';
+import { AuthService } from '../../core/services/auth.service';
 import { Paciente } from '../../core/models/paciente.model';
+import { PaginatedResponse } from '../../core/models/catalogo.model';
 
 @Component({
     selector: 'app-historias-clinicas',
@@ -18,11 +19,16 @@ export class HistoriasClinicasComponent implements OnInit {
     private cdr = inject(ChangeDetectorRef);
     private historiaService = inject(HistoriaClinicaService);
     private pacienteService = inject(PacienteService);
+    private authService = inject(AuthService);
 
     pacientes: Paciente[] = [];
     pacientesFiltrados: Paciente[] = [];
     pacienteSeleccionado: Paciente | null = null;
     historias: HistoriaClinica[] = [];
+    paginaActual = 1;
+    readonly registrosPorPagina = 10;
+    totalPaginas = 1;
+    totalRegistros = 0;
 
     cargando = true;
     guardando = false;
@@ -31,13 +37,12 @@ export class HistoriasClinicasComponent implements OnInit {
 
     historiaForm = this.fb.nonNullable.group({
         idPaciente: [0, [Validators.required, Validators.min(1)]],
-        peso: [0, [Validators.required, Validators.min(0)]],
-        temperatura: [38, [Validators.required]],
-        frecuenciaCardiaca: [80],
-        diagnostico: ['', [Validators.required, Validators.maxLength(300)]],
-        tratamiento: ['', [Validators.required, Validators.maxLength(300)]],
-        medicamentos: [''],
-        observaciones: ['', [Validators.maxLength(300)]]
+        pesoKg: [null as number | null, [Validators.min(0)]],
+        temperatura: [null as number | null],
+        frecuenciaCardiaca: [null as number | null],
+        diagnostico: ['', [Validators.required, Validators.maxLength(500)]],
+        tratamiento: ['', [Validators.maxLength(500)]],
+        observaciones: ['', [Validators.maxLength(500)]]
     });
 
     ngOnInit(): void {
@@ -47,8 +52,8 @@ export class HistoriasClinicasComponent implements OnInit {
     cargarDatosIniciales(): void {
         this.cargando = true;
         this.pacienteService.obtenerTodos().subscribe({
-            next: (res: any) => {
-                this.pacientes = Array.isArray(res) ? res : (res?.items || res?.data || []);
+            next: (pacientes: Paciente[]) => {
+                this.pacientes = pacientes;
                 this.pacientesFiltrados = [...this.pacientes];
                 if (this.pacientes.length > 0) {
                     this.seleccionarPacientePorId(this.pacientes[0].idPaciente);
@@ -89,33 +94,59 @@ export class HistoriasClinicasComponent implements OnInit {
         if (!encontrado) return;
 
         this.pacienteSeleccionado = encontrado;
-        this.cargando = true;
+        this.paginaActual = 1;
+        this.cargarHistorias();
+    }
 
-        this.historiaService.obtenerPorPaciente(idPaciente).subscribe({
-            next: (data) => {
-                this.historias = Array.isArray(data) ? data : [];
+    cargarHistorias(): void {
+        const paciente = this.pacienteSeleccionado;
+        if (!paciente) return;
+
+        this.cargando = true;
+        this.historiaService.obtenerPaginadoPorPaciente(
+            paciente.idPaciente,
+            this.paginaActual,
+            this.registrosPorPagina
+        ).subscribe({
+            next: (respuesta: PaginatedResponse<HistoriaClinica>) => {
+                this.historias = respuesta.items ?? [];
+                this.totalRegistros = respuesta.totalCount ?? 0;
+                this.totalPaginas = Math.max(1, respuesta.totalPages ?? 1);
+                this.paginaActual = respuesta.pageNumber ?? this.paginaActual;
                 this.cargando = false;
                 this.cdr.detectChanges();
             },
             error: (err) => {
                 console.error('Error al obtener historias clínicas:', err);
                 this.historias = [];
+                this.totalRegistros = 0;
+                this.totalPaginas = 1;
                 this.cargando = false;
                 this.cdr.detectChanges();
             }
         });
     }
 
+    cambiarPagina(pagina: number): void {
+        if (pagina >= 1 && pagina <= this.totalPaginas && pagina !== this.paginaActual) {
+            this.paginaActual = pagina;
+            this.cargarHistorias();
+        }
+    }
+
+    get ultimoRegistro(): number {
+        return Math.min(this.paginaActual * this.registrosPorPagina, this.totalRegistros);
+    }
+
     abrirModal(): void {
         if (!this.pacienteSeleccionado) return;
         this.historiaForm.reset({
             idPaciente: this.pacienteSeleccionado.idPaciente,
-            peso: 15,
-            temperatura: 38.5,
-            frecuenciaCardiaca: 90,
+            pesoKg: null,
+            temperatura: null,
+            frecuenciaCardiaca: null,
             diagnostico: '',
             tratamiento: '',
-            medicamentos: '',
             observaciones: ''
         });
         this.modalAbierto = true;
@@ -131,19 +162,25 @@ export class HistoriasClinicasComponent implements OnInit {
             return;
         }
 
+        const usuarioActual = this.authService.obtenerUsuario();
+        if (!usuarioActual) {
+            console.error('No hay usuario autenticado');
+            return;
+        }
+
         this.guardando = true;
         const val = this.historiaForm.getRawValue();
 
-        const request: HistoriaClinica = {
+        const request: HistoriaClinicaCreateRequest = {
             idPaciente: Number(val.idPaciente),
-            idVeterinario: 1,
+            idVeterinario: usuarioActual.idUsuario,
             fechaAtencion: new Date().toISOString(),
-            pesoKg: Number(val.peso),
-            temperatura: Number(val.temperatura),
-            frecuenciaCardiaca: Number(val.frecuenciaCardiaca),
+            pesoKg: val.pesoKg ? Number(val.pesoKg) : null,
+            temperatura: val.temperatura ? Number(val.temperatura) : null,
+            frecuenciaCardiaca: val.frecuenciaCardiaca ? Number(val.frecuenciaCardiaca) : null,
             diagnostico: val.diagnostico.trim(),
-            tratamiento: val.tratamiento.trim(),
-            observaciones: val.observaciones?.trim()
+            tratamiento: val.tratamiento?.trim() || null,
+            observaciones: val.observaciones?.trim() || null
         };
 
         this.historiaService.crear(request).subscribe({
@@ -151,12 +188,13 @@ export class HistoriasClinicasComponent implements OnInit {
                 this.guardando = false;
                 this.cerrarModal();
                 if (this.pacienteSeleccionado) {
-                    this.seleccionarPacientePorId(this.pacienteSeleccionado.idPaciente);
+                    this.paginaActual = 1;
+                    this.cargarHistorias();
                 }
                 this.cdr.detectChanges();
             },
             error: (err) => {
-                console.error('Error al guardar historia:', err);
+                console.error('Error al guardar historia clínica:', err);
                 this.guardando = false;
                 alert('No se pudo registrar la historia clínica.');
                 this.cdr.detectChanges();

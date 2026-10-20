@@ -21,7 +21,8 @@ export class UsuarioService {
   obtenerPaginado(
     page: number = 1,
     pageSize: number = 10,
-    buscar?: string
+    buscar?: string,
+    idRol?: number
   ): Observable<PaginatedResponse<Usuario>> {
     let params = new HttpParams()
       .set('page', page.toString())
@@ -29,6 +30,9 @@ export class UsuarioService {
 
     if (buscar && buscar.trim() !== '') {
       params = params.set('buscar', buscar.trim());
+    }
+    if (idRol !== undefined) {
+      params = params.set('idRol', idRol.toString());
     }
 
     return this.http.get<PaginatedResponse<Usuario>>(this.apiUrl, { params });

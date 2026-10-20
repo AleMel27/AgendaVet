@@ -46,7 +46,5 @@ export interface PaginatedResponse<T> {
   pageSize: number;
   totalCount: number;
   totalPages: number;
-  hasPreviousPage: boolean;
-  hasNextPage: boolean;
   items: T[];
 }

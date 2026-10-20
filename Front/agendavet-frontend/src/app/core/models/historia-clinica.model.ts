@@ -1,14 +1,2 @@
-export interface HistoriaClinica {
-    idHistoria?: number;
-    idCita?: number | null;
-    idPaciente: number;
-    idVeterinario?: number;
-    fechaAtencion: string;
-    pesoKg?: number;
-    peso?: number;
-    temperatura?: number;
-    frecuenciaCardiaca?: number;
-    diagnostico: string;
-    tratamiento?: string;
-    observaciones?: string;
-}
+// Tipos re-exportados desde el servicio para compatibilidad con componentes existentes
+export type { HistoriaClinica, HistoriaClinicaCreateRequest } from '../services/historia-clinica.service';

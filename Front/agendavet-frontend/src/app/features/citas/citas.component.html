@@ -23,14 +23,14 @@
     <div class="header-right">
       <!-- FILTROS -->
       <div class="filtros-wrapper">
-        <select class="select-filtro" [(ngModel)]="filtroVeterinario">
+        <select class="select-filtro" [(ngModel)]="filtroVeterinario" (ngModelChange)="reiniciarPaginacion()">
           <option [ngValue]="null">Todos los Veterinarios</option>
           <option *ngFor="let vet of veterinarios" [ngValue]="vet.idUsuario">
             Dr. {{ vet.nombre }} {{ vet.apellido }}
           </option>
         </select>
 
-        <select class="select-filtro" [(ngModel)]="filtroEstado">
+        <select class="select-filtro" [(ngModel)]="filtroEstado" (ngModelChange)="reiniciarPaginacion()">
           <option value="">Todos los Estados</option>
           <option value="Pendiente">Pendiente</option>
           <option value="Confirmada">Confirmada</option>
@@ -169,7 +169,7 @@
           </thead>
 
           <tbody>
-            <tr *ngFor="let cita of citasFiltradas">
+            <tr *ngFor="let cita of citasPaginadas">
               <td class="cell-date">
                 <strong>{{ formatearHora(cita.fechaHora) }}</strong>
                 <small>{{ cita.fechaHora | slice: 0: 10 }}</small>
@@ -208,6 +208,16 @@
             </tr>
           </tbody>
         </table>
+        <div class="list-pagination" *ngIf="totalPaginas > 1">
+          <span>{{ citasFiltradas.length }} citas · Página {{ paginaActual }} de {{ totalPaginas }}</span>
+          <div class="list-pagination-actions">
+            <button type="button" (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">
+              Anterior
+            </button>
+            <button type="button" (click)="cambiarPagina(paginaActual + 1)"
+              [disabled]="paginaActual === totalPaginas">Siguiente</button>
+          </div>
+        </div>
       </div>
     </div>
 

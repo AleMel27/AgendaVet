@@ -50,6 +50,8 @@ export class CitasComponent implements OnInit {
   filtroVeterinario: number | null = null;
   filtroEstado: string = '';
   citaEditando: number | null = null;
+  paginaActual = 1;
+  readonly registrosPorPagina = 10;
 
   cargando = true;
   guardando = false;
@@ -172,6 +174,25 @@ export class CitasComponent implements OnInit {
       }
       return true;
     });
+  }
+
+  get citasPaginadas(): Cita[] {
+    const inicio = (this.paginaActual - 1) * this.registrosPorPagina;
+    return this.citasFiltradas.slice(inicio, inicio + this.registrosPorPagina);
+  }
+
+  get totalPaginas(): number {
+    return Math.max(1, Math.ceil(this.citasFiltradas.length / this.registrosPorPagina));
+  }
+
+  cambiarPagina(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.totalPaginas) {
+      this.paginaActual = pagina;
+    }
+  }
+
+  reiniciarPaginacion(): void {
+    this.paginaActual = 1;
   }
 
   // Generador de cuadrícula del mes

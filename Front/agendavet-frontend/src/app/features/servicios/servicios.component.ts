@@ -27,6 +27,8 @@ export class ServiciosComponent implements OnInit {
   // Filtros
   busqueda = '';
   filtroEstado: 'todos' | 'activos' | 'inactivos' = 'todos';
+  paginaActual = 1;
+  readonly registrosPorPagina = 10;
 
   // Modal de Crear / Editar
   mostrarModal = false;
@@ -76,6 +78,7 @@ export class ServiciosComponent implements OnInit {
   }
 
   aplicarFiltros(): void {
+    this.paginaActual = 1;
     const termino = this.busqueda.trim().toLowerCase();
 
     this.serviciosFiltrados = this.servicios.filter(servicio => {
@@ -90,6 +93,25 @@ export class ServiciosComponent implements OnInit {
 
       return coincideBusqueda && coincideEstado;
     });
+  }
+
+  get serviciosPaginados(): Servicio[] {
+    const inicio = (this.paginaActual - 1) * this.registrosPorPagina;
+    return this.serviciosFiltrados.slice(inicio, inicio + this.registrosPorPagina);
+  }
+
+  get totalPaginas(): number {
+    return Math.max(1, Math.ceil(this.serviciosFiltrados.length / this.registrosPorPagina));
+  }
+
+  get ultimoRegistro(): number {
+    return Math.min(this.paginaActual * this.registrosPorPagina, this.serviciosFiltrados.length);
+  }
+
+  cambiarPagina(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.totalPaginas) {
+      this.paginaActual = pagina;
+    }
   }
 
   onBuscar(evento: Event): void {

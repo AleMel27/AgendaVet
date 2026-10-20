@@ -31,6 +31,19 @@ export class MainLayout implements OnInit {
     return this.authService.obtenerUsuario();
   }
 
+  get tituloPagina(): string {
+    const ruta = this.router.url.split(/[?#]/, 1)[0].split('/').filter(Boolean).at(-1);
+    const titulos: Record<string, string> = {
+      dashboard: 'Dashboard',
+      citas: 'Citas',
+      pacientes: 'Pacientes',
+      propietarios: 'Propietarios',
+      'historias-clinicas': 'Historias clínicas',
+      servicios: 'Servicios',
+      usuarios: 'Usuarios'
+    };
+    return ruta ? titulos[ruta] ?? 'Panel de gestión' : 'Panel de gestión';
+  }
 
   get esAdministrador(): boolean {
     return Number(this.usuario?.idRol) === 1 ||

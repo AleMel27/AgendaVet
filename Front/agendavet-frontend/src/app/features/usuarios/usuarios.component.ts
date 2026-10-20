@@ -21,7 +21,7 @@ export class UsuariosComponent implements OnInit {
 
   // Paginación y búsqueda
   paginaActual = 1;
-  tamanoPagina = 10;
+  readonly tamanoPagina = 10;
   totalRegistros = 0;
   totalPaginas = 1;
   busqueda = '';
@@ -111,12 +111,12 @@ export class UsuariosComponent implements OnInit {
     this.errorMensaje = null;
     this.cdr.detectChanges();
 
-    this.usuarioService.obtenerPaginado(this.paginaActual, this.tamanoPagina, this.busqueda).subscribe({
+    const idRol = this.filtroRolId === 'todos' ? undefined : this.filtroRolId;
+    this.usuarioService.obtenerPaginado(this.paginaActual, this.tamanoPagina, this.busqueda, idRol).subscribe({
       next: (resp) => {
         this.usuarios = resp.items ?? [];
         this.totalRegistros = resp.totalCount ?? 0;
         this.paginaActual = resp.pageNumber ?? 1;
-        this.tamanoPagina = resp.pageSize ?? 10;
         this.totalPaginas = resp.totalPages || Math.ceil(this.totalRegistros / this.tamanoPagina) || 1;
         this.cargando = false;
         this.cdr.detectChanges();
@@ -131,10 +131,7 @@ export class UsuariosComponent implements OnInit {
   }
 
   get usuariosFiltrados(): Usuario[] {
-    if (this.filtroRolId === 'todos') {
-      return this.usuarios;
-    }
-    return this.usuarios.filter(u => u.idRol === this.filtroRolId);
+    return this.usuarios;
   }
 
   onBuscar(evento: Event): void {
@@ -151,7 +148,8 @@ export class UsuariosComponent implements OnInit {
 
   cambiarFiltroRol(idRol: number | 'todos'): void {
     this.filtroRolId = idRol;
-    this.cdr.detectChanges();
+    this.paginaActual = 1;
+    this.cargarUsuarios();
   }
 
   cambiarPagina(nuevaPagina: number): void {
@@ -159,12 +157,6 @@ export class UsuariosComponent implements OnInit {
       this.paginaActual = nuevaPagina;
       this.cargarUsuarios();
     }
-  }
-
-  cambiarTamanoPagina(evento: Event): void {
-    this.tamanoPagina = Number((evento.target as HTMLSelectElement).value);
-    this.paginaActual = 1;
-    this.cargarUsuarios();
   }
 
   // Modales

@@ -1,13 +1,14 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { PropietarioService } from '../../core/services/propietario.service';
-import { Propietario } from '../../core/models/propietario.model';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { PropietarioService, PropietarioCreateRequest } from '../../core/services/propietario.service';
+import { Propietario } from '../../core/models/catalogo.model';
+import { PaginatedResponse } from '../../core/models/catalogo.model';
 
 @Component({
     selector: 'app-propietarios',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule],
     templateUrl: './propietarios.component.html',
     styleUrl: './propietarios.component.css'
 })
@@ -33,6 +34,9 @@ export class PropietariosComponent implements OnInit {
     totalPaginas = 1;
     totalRegistros = 0;
 
+    // Búsqueda
+    terminoBusqueda = '';
+
     // Formulario Reactivo
     propietarioForm = this.fb.nonNullable.group({
         nombre: ['', [Validators.required, Validators.maxLength(50)]],
@@ -49,31 +53,27 @@ export class PropietariosComponent implements OnInit {
 
     cargarPropietarios(): void {
         this.cargando = true;
-        this.propietarioService.getPropietarios(this.paginaActual, this.elementosPorPagina).subscribe({
-            next: (res: any) => {
-                if (Array.isArray(res)) {
-                    this.totalRegistros = res.length;
-                    this.totalPaginas = Math.ceil(this.totalRegistros / this.elementosPorPagina) || 1;
-                    const inicio = (this.paginaActual - 1) * this.elementosPorPagina;
-                    this.propietarios = res.slice(inicio, inicio + this.elementosPorPagina);
-                } else if (res && res.items) {
-                    this.propietarios = res.items;
-                    this.totalPaginas = res.totalPages || 1;
-                    this.totalRegistros = res.totalRecords || res.items.length;
-                } else if (res) {
-                    this.propietarios = res.data || res.resultado || [];
-                    this.totalRegistros = this.propietarios.length;
-                    this.totalPaginas = 1;
-                }
+        const buscar = this.terminoBusqueda.trim() || undefined;
+        this.propietarioService.obtenerPaginado(this.paginaActual, this.elementosPorPagina, buscar).subscribe({
+            next: (res: PaginatedResponse<Propietario>) => {
+                this.propietarios = res.items;
+                this.totalPaginas = res.totalPages || 1;
+                this.totalRegistros = res.totalCount;
                 this.cargando = false;
                 this.cdr.detectChanges();
             },
             error: (err) => {
-                console.error('Error al cargar:', err);
+                console.error('Error al cargar propietarios:', err);
+                this.errorMensaje = 'No se pudieron cargar los propietarios.';
                 this.cargando = false;
                 this.cdr.detectChanges();
             }
         });
+    }
+
+    buscar(): void {
+        this.paginaActual = 1;
+        this.cargarPropietarios();
     }
 
     abrirModalCrear(): void {
@@ -109,7 +109,7 @@ export class PropietariosComponent implements OnInit {
         }
 
         this.guardando = true;
-        const data = this.propietarioForm.getRawValue();
+        const data = this.propietarioForm.getRawValue() as PropietarioCreateRequest;
 
         if (this.modoEdicion && this.propietarioEditandoId) {
             this.propietarioService.actualizar(this.propietarioEditandoId, data).subscribe({
@@ -122,7 +122,7 @@ export class PropietariosComponent implements OnInit {
                 error: (err) => {
                     console.error('Error al actualizar:', err);
                     this.guardando = false;
-                    alert('No se pudo actualizar el propietario.');
+                    this.errorMensaje = 'No se pudo actualizar el propietario.';
                     this.cdr.detectChanges();
                 }
             });
@@ -135,9 +135,9 @@ export class PropietariosComponent implements OnInit {
                     this.cargarPropietarios();
                 },
                 error: (err) => {
-                    console.error('Error al crear:', err);
+                    console.error('Error al crear propietario:', err);
                     this.guardando = false;
-                    alert('No se pudo registrar el propietario. Verifica los datos.');
+                    this.errorMensaje = 'No se pudo registrar el propietario. Verifica los datos.';
                     this.cdr.detectChanges();
                 }
             });
@@ -147,14 +147,14 @@ export class PropietariosComponent implements OnInit {
     darDeBaja(id: number): void {
         if (!confirm('¿Estás seguro de eliminar este propietario?')) return;
 
-        this.propietarioService.eliminarPropietario(id).subscribe({
+        this.propietarioService.eliminar(id).subscribe({
             next: () => {
                 this.mostrarMensaje('Propietario eliminado correctamente.');
                 this.cargarPropietarios();
             },
             error: (err) => {
                 console.error('Error al eliminar:', err);
-                alert('No se pudo eliminar el propietario. Es posible que tenga pacientes vinculados.');
+                this.errorMensaje = 'No se pudo eliminar el propietario. Es posible que tenga pacientes vinculados.';
                 this.cdr.detectChanges();
             }
         });
@@ -169,6 +169,7 @@ export class PropietariosComponent implements OnInit {
 
     mostrarMensaje(msg: string): void {
         this.exitoMensaje = msg;
+        this.errorMensaje = '';
         setTimeout(() => {
             this.exitoMensaje = '';
             this.cdr.detectChanges();

@@ -17,7 +17,7 @@ export interface UsuarioCreateRequest {
   email: string;
   password: string;
   telefono?: string | null;
-  activo: boolean;
+  activo?: boolean;
 }
 
 export interface UsuarioUpdateRequest {
@@ -34,10 +34,4 @@ export interface Rol {
   descripcion?: string | null;
 }
 
-export interface PaginatedResponse<T> {
-  items: T[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-}
+export type { PaginatedResponse } from './catalogo.model';

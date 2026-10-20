@@ -149,7 +149,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let s of serviciosFiltrados" [class.row-inactive]="!s.activo">
+        <tr *ngFor="let s of serviciosPaginados" [class.row-inactive]="!s.activo">
           <td>
             <div class="service-identity">
               <div class="service-icon-box" [class.inactive]="!s.activo">
@@ -204,6 +204,24 @@
         </tr>
       </tbody>
     </table>
+
+    <div class="list-pagination" *ngIf="serviciosFiltrados.length > 0 && totalPaginas > 1">
+      <span>
+        Mostrando {{ (paginaActual - 1) * registrosPorPagina + 1 }} -
+        {{ ultimoRegistro }}
+        de {{ serviciosFiltrados.length }} servicios
+      </span>
+      <div class="list-pagination-actions">
+        <button type="button" (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">
+          Anterior
+        </button>
+        <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+        <button type="button" (click)="cambiarPagina(paginaActual + 1)"
+          [disabled]="paginaActual === totalPaginas">
+          Siguiente
+        </button>
+      </div>
+    </div>
 
     <!-- Estado vacío -->
     <div class="empty-state" *ngIf="serviciosFiltrados.length === 0">

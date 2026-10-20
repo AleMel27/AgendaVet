@@ -97,7 +97,7 @@
       </div>
 
       <div class="appointments-list" *ngIf="!cargando && citasHoy.length > 0">
-        <div class="appointment-item" *ngFor="let cita of citasHoy">
+        <div class="appointment-item" *ngFor="let cita of citasHoyPaginadas">
           <div class="appointment-time">
             {{ obtenerHora(cita.fechaHora) }}
           </div>
@@ -112,6 +112,15 @@
           <span class="appointment-status" [ngClass]="obtenerClaseEstado(cita.estado)">
             {{ cita.estado }}
           </span>
+        </div>
+        <div class="list-pagination" *ngIf="totalPaginasCitasHoy > 1">
+          <span>Página {{ paginaCitasHoy }} de {{ totalPaginasCitasHoy }}</span>
+          <div class="list-pagination-actions">
+            <button type="button" (click)="cambiarPaginaCitasHoy(paginaCitasHoy - 1)"
+              [disabled]="paginaCitasHoy === 1">Anterior</button>
+            <button type="button" (click)="cambiarPaginaCitasHoy(paginaCitasHoy + 1)"
+              [disabled]="paginaCitasHoy === totalPaginasCitasHoy">Siguiente</button>
+          </div>
         </div>
       </div>
 

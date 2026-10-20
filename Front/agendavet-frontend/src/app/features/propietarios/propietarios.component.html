@@ -5,6 +5,12 @@
         {{ exitoMensaje }}
     </div>
 
+    <!-- Alerta de error -->
+    <div *ngIf="errorMensaje"
+        style="background-color: #fee2e2; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-weight: 500; font-size: 14px;">
+        {{ errorMensaje }}
+    </div>
+
     <!-- Encabezado -->
     <div class="header-flex">
         <div>
@@ -14,6 +20,17 @@
         <button (click)="abrirModalCrear()" class="btn-add">
             + Registrar Propietario
         </button>
+    </div>
+
+    <!-- Barra de búsqueda -->
+    <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <input type="text" [(ngModel)]="terminoBusqueda" (keyup.enter)="buscar()"
+            placeholder="🔍 Buscar por nombre, apellido o DNI..."
+            style="flex: 1; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;">
+        <button (click)="buscar()"
+            style="padding: 10px 18px; background: #0ea5e9; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">Buscar</button>
+        <button *ngIf="terminoBusqueda" (click)="terminoBusqueda=''; buscar()"
+            style="padding: 10px 14px; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 500; cursor: pointer; font-size: 14px;">Limpiar</button>
     </div>
 
     <!-- Tarjeta con Tabla -->
