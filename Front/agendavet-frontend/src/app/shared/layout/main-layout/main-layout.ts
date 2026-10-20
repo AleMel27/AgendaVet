@@ -1,8 +1,9 @@
 
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-main-layout',
@@ -11,15 +12,25 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.css'
 })
-export class MainLayout {
+export class MainLayout implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   menuAbierto = false;
+
+  ngOnInit(): void {
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.cdr.detectChanges();
+      });
+  }
 
   get usuario() {
     return this.authService.obtenerUsuario();
   }
+
 
   get esAdministrador(): boolean {
     return Number(this.usuario?.idRol) === 1 ||

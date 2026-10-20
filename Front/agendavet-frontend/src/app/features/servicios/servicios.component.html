@@ -1,0 +1,384 @@
+<section class="servicios-page">
+  <!-- Cabecera de la sección -->
+  <div class="page-header">
+    <div class="header-titles">
+      <span class="eyebrow">CATÁLOGO CLÍNICO</span>
+      <h1>Servicios</h1>
+      <p class="subtitle">Gestiona las prestaciones clínicas, tarifas y tiempos estimados de atención.</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn-primary" (click)="abrirModalNuevo()">
+        <i class="fa-solid fa-plus"></i>
+        <span>Nuevo Servicio</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Notificación de éxito -->
+  <div class="toast-notification" *ngIf="mensajeExito">
+    <div class="toast-icon">
+      <i class="fa-solid fa-circle-check"></i>
+    </div>
+    <div class="toast-body">
+      <strong>Operación exitosa</strong>
+      <p>{{ mensajeExito }}</p>
+    </div>
+    <button type="button" class="toast-close" (click)="mensajeExito = null">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <!-- Tarjetas de métricas -->
+  <div class="stats-row">
+    <div class="metric-card">
+      <div class="metric-icon blue">
+        <i class="fa-solid fa-briefcase-medical"></i>
+      </div>
+      <div class="metric-info">
+        <span class="metric-label">Total Servicios</span>
+        <strong class="metric-value">{{ totalServicios }}</strong>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon green">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <div class="metric-info">
+        <span class="metric-label">Servicios Activos</span>
+        <strong class="metric-value">{{ serviciosActivos }}</strong>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon orange">
+        <i class="fa-solid fa-circle-pause"></i>
+      </div>
+      <div class="metric-info">
+        <span class="metric-label">Inactivos</span>
+        <strong class="metric-value">{{ serviciosInactivos }}</strong>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon purple">
+        <i class="fa-solid fa-clock"></i>
+      </div>
+      <div class="metric-info">
+        <span class="metric-label">Duración Promedio</span>
+        <strong class="metric-value">{{ duracionPromedio }} min</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de búsqueda y filtros -->
+  <div class="filter-bar">
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input
+        type="text"
+        placeholder="Buscar por nombre o descripción..."
+        [value]="busqueda"
+        (input)="onBuscar($event)"
+      />
+      <button
+        *ngIf="busqueda"
+        type="button"
+        class="clear-search-btn"
+        (click)="limpiarBusqueda()"
+        title="Limpiar búsqueda"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="filter-pills">
+      <button
+        type="button"
+        class="filter-pill"
+        [class.active]="filtroEstado === 'todos'"
+        (click)="cambiarFiltroEstado('todos')"
+      >
+        Todos ({{ totalServicios }})
+      </button>
+      <button
+        type="button"
+        class="filter-pill"
+        [class.active]="filtroEstado === 'activos'"
+        (click)="cambiarFiltroEstado('activos')"
+      >
+        Activos ({{ serviciosActivos }})
+      </button>
+      <button
+        type="button"
+        class="filter-pill"
+        [class.active]="filtroEstado === 'inactivos'"
+        (click)="cambiarFiltroEstado('inactivos')"
+      >
+        Inactivos ({{ serviciosInactivos }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Estado de carga -->
+  <div class="loading-state" *ngIf="cargando">
+    <div class="spinner"></div>
+    <p>Cargando catálogo de servicios...</p>
+  </div>
+
+  <!-- Mensaje de error -->
+  <div class="error-banner" *ngIf="!cargando && errorMensaje">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <div>
+      <strong>Ocurrió un problema</strong>
+      <p>{{ errorMensaje }}</p>
+    </div>
+    <button type="button" class="btn-secondary" (click)="cargarServicios()">Reintentar</button>
+  </div>
+
+  <!-- Tabla de Servicios -->
+  <div class="table-container" *ngIf="!cargando && !errorMensaje">
+    <table class="data-table" *ngIf="serviciosFiltrados.length > 0">
+      <thead>
+        <tr>
+          <th>Servicio</th>
+          <th>Precio</th>
+          <th>Duración Estimada</th>
+          <th>Estado</th>
+          <th class="actions-header">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of serviciosFiltrados" [class.row-inactive]="!s.activo">
+          <td>
+            <div class="service-identity">
+              <div class="service-icon-box" [class.inactive]="!s.activo">
+                <i class="fa-solid fa-stethoscope"></i>
+              </div>
+              <div class="service-text">
+                <strong class="service-name">{{ s.nombre }}</strong>
+                <span class="service-desc" *ngIf="s.descripcion">{{ s.descripcion }}</span>
+                <span class="service-desc muted" *ngIf="!s.descripcion">Sin descripción</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="price-tag">
+              <small>$</small>{{ s.precio | number:'1.2-2' }}
+            </span>
+          </td>
+          <td>
+            <span class="duration-badge">
+              <i class="fa-regular fa-clock"></i>
+              <span>{{ s.duracionEstimadaMin }} min</span>
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [class.active]="s.activo" [class.inactive]="!s.activo">
+              <span class="dot"></span>
+              {{ s.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <button
+              type="button"
+              class="action-btn edit-btn"
+              (click)="abrirModalEditar(s)"
+              title="Editar servicio"
+            >
+              <i class="fa-solid fa-pen-to-square"></i>
+              <span>Editar</span>
+            </button>
+            <button
+              type="button"
+              class="action-btn toggle-btn"
+              [class.btn-deactivate]="s.activo"
+              [class.btn-activate]="!s.activo"
+              (click)="solicitarCambioEstado(s)"
+              [title]="s.activo ? 'Desactivar servicio' : 'Activar servicio'"
+            >
+              <i [class]="s.activo ? 'fa-solid fa-toggle-on' : 'fa-solid fa-toggle-off'"></i>
+              <span>{{ s.activo ? 'Desactivar' : 'Activar' }}</span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Estado vacío -->
+    <div class="empty-state" *ngIf="serviciosFiltrados.length === 0">
+      <div class="empty-icon">
+        <i class="fa-solid fa-clipboard-list"></i>
+      </div>
+      <h3>No se encontraron servicios</h3>
+      <p *ngIf="busqueda">
+        No hay servicios que coincidan con "{{ busqueda }}". Intenta con otro término.
+      </p>
+      <p *ngIf="!busqueda">
+        Aún no has registrado ningún servicio en el sistema.
+      </p>
+      <button type="button" class="btn-primary" (click)="abrirModalNuevo()" *ngIf="!busqueda">
+        <i class="fa-solid fa-plus"></i>
+        <span>Crear primer servicio</span>
+      </button>
+      <button type="button" class="btn-secondary" (click)="limpiarBusqueda()" *ngIf="busqueda">
+        Limpiar búsqueda
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- MODAL CREAR / EDITAR SERVICIO -->
+<div class="modal-backdrop" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <div class="modal-badge-icon">
+          <i class="fa-solid" [class.fa-plus]="!modoEdicion" [class.fa-pen-to-square]="modoEdicion"></i>
+        </div>
+        <div>
+          <h2>{{ modoEdicion ? 'Editar Servicio' : 'Nuevo Servicio' }}</h2>
+          <p>{{ modoEdicion ? 'Actualiza los datos del servicio seleccionado.' : 'Completa la información para registrar una nueva prestación.' }}</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close-btn" (click)="cerrarModal()" aria-label="Cerrar modal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="formularioServicio" (ngSubmit)="guardarServicio()" class="modal-form">
+      <div class="form-body">
+        <!-- Campo Nombre -->
+        <div class="form-group">
+          <label for="nombre">Nombre del Servicio <span class="required">*</span></label>
+          <input
+            id="nombre"
+            type="text"
+            formControlName="nombre"
+            placeholder="Ej: Consulta general, Vacunación canina, Limpieza dental"
+            [class.input-error]="formularioServicio.get('nombre')?.invalid && formularioServicio.get('nombre')?.touched"
+          />
+          <span class="field-error" *ngIf="formularioServicio.get('nombre')?.invalid && formularioServicio.get('nombre')?.touched">
+            El nombre es obligatorio (máx. 100 caracteres).
+          </span>
+        </div>
+
+        <!-- Campo Descripción -->
+        <div class="form-group">
+          <label for="descripcion">Descripción</label>
+          <textarea
+            id="descripcion"
+            rows="3"
+            formControlName="descripcion"
+            placeholder="Breve detalle sobre lo que incluye el procedimiento..."
+          ></textarea>
+          <small class="field-hint">Opcional. Máximo 255 caracteres.</small>
+        </div>
+
+        <div class="form-row-2">
+          <!-- Campo Precio -->
+          <div class="form-group">
+            <label for="precio">Precio <span class="required">*</span></label>
+            <div class="input-with-prefix">
+              <span class="input-prefix">$</span>
+              <input
+                id="precio"
+                type="number"
+                step="0.01"
+                min="0.01"
+                formControlName="precio"
+                placeholder="0.00"
+                [class.input-error]="formularioServicio.get('precio')?.invalid && formularioServicio.get('precio')?.touched"
+              />
+            </div>
+            <span class="field-error" *ngIf="formularioServicio.get('precio')?.invalid && formularioServicio.get('precio')?.touched">
+              Ingresa un precio válido mayor a 0.
+            </span>
+          </div>
+
+          <!-- Campo Duración -->
+          <div class="form-group">
+            <label for="duracionEstimadaMin">Duración estimada <span class="required">*</span></label>
+            <div class="input-with-suffix">
+              <input
+                id="duracionEstimadaMin"
+                type="number"
+                min="5"
+                max="480"
+                formControlName="duracionEstimadaMin"
+                placeholder="30"
+                [class.input-error]="formularioServicio.get('duracionEstimadaMin')?.invalid && formularioServicio.get('duracionEstimadaMin')?.touched"
+              />
+              <span class="input-suffix">minutos</span>
+            </div>
+            <span class="field-error" *ngIf="formularioServicio.get('duracionEstimadaMin')?.invalid && formularioServicio.get('duracionEstimadaMin')?.touched">
+              Debe estar entre 5 y 480 minutos.
+            </span>
+          </div>
+        </div>
+
+        <!-- Presets rápidos de duración -->
+        <div class="duration-presets">
+          <span class="presets-label">Sugeridos:</span>
+          <button
+            type="button"
+            *ngFor="let m of presetsDuracion"
+            class="preset-btn"
+            [class.selected]="formularioServicio.get('duracionEstimadaMin')?.value === m"
+            (click)="seleccionarPresetDuracion(m)"
+          >
+            {{ m }}m
+          </button>
+        </div>
+
+        <!-- Switch Activo -->
+        <div class="form-group-toggle">
+          <label class="switch-container">
+            <input type="checkbox" formControlName="activo" />
+            <span class="switch-slider"></span>
+          </label>
+          <div class="toggle-text">
+            <strong>Servicio disponible para agendamiento</strong>
+            <span>Los servicios activos pueden ser seleccionados al programar citas.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="cerrarModal()" [disabled]="guardando">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="guardando">
+          <i class="fa-solid fa-spinner fa-spin" *ngIf="guardando"></i>
+          <span>{{ guardando ? 'Guardando...' : (modoEdicion ? 'Actualizar Servicio' : 'Guardar Servicio') }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMACIÓN CAMBIO DE ESTADO -->
+<div class="modal-backdrop" *ngIf="mostrarConfirmacion" (click)="cancelarCambioEstado()">
+  <div class="confirm-dialog" (click)="$event.stopPropagation()">
+    <div class="confirm-icon" [class.warn]="servicioParaCambiarEstado?.activo" [class.info]="!servicioParaCambiarEstado?.activo">
+      <i class="fa-solid" [class.fa-toggle-off]="servicioParaCambiarEstado?.activo" [class.fa-toggle-on]="!servicioParaCambiarEstado?.activo"></i>
+    </div>
+    <h3>{{ servicioParaCambiarEstado?.activo ? '¿Desactivar servicio?' : '¿Activar servicio?' }}</h3>
+    <p>
+      Estás a punto de {{ servicioParaCambiarEstado?.activo ? 'desactivar' : 'activar' }} el servicio
+      <strong>"{{ servicioParaCambiarEstado?.nombre }}"</strong>.
+      {{ servicioParaCambiarEstado?.activo ? 'No aparecerá disponible para nuevas citas.' : 'Volverá a estar disponible en el agendamiento.' }}
+    </p>
+    <div class="confirm-actions">
+      <button type="button" class="btn-secondary" (click)="cancelarCambioEstado()">Cancelar</button>
+      <button
+        type="button"
+        class="btn-primary"
+        [class.btn-warning]="servicioParaCambiarEstado?.activo"
+        (click)="confirmarCambioEstado()"
+      >
+        {{ servicioParaCambiarEstado?.activo ? 'Sí, desactivar' : 'Sí, activar' }}
+      </button>
+    </div>
+  </div>
+</div>

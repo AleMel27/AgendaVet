@@ -2,6 +2,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login.component';
 import { authGuard } from './core/guards/auth-guard';
+import { adminGuard } from './core/guards/admin.guard';
 import { MainLayout } from './shared/layout/main-layout/main-layout';
 
 export const routes: Routes = [
@@ -36,6 +37,21 @@ export const routes: Routes = [
           )
       },
       {
+        path: 'servicios',
+        loadComponent: () =>
+          import('./features/servicios/servicios.component').then(
+            m => m.ServiciosComponent
+          )
+      },
+      {
+        path: 'usuarios',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/usuarios/usuarios.component').then(
+            m => m.UsuariosComponent
+          )
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'
@@ -54,3 +70,4 @@ export const routes: Routes = [
     redirectTo: 'login'
   }
 ];
+

@@ -8,8 +8,6 @@ namespace AgendaVet.Api
     {
         public static void Initialize(AgendaVetDbContext context)
         {
-            //context.Database.Migrate();
-
             // 1. Roles
             if (!context.Roles.Any())
             {
